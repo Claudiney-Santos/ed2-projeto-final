@@ -33,5 +33,6 @@ int mudarStatus(processo* p, statusCodigo novoStatus) {
     if(!p)
         return 1;
     p->status=novoStatus;
+    return 0;
 }
 

@@ -1,51 +1,49 @@
 //Inicialização do sistema operacional simulador.
 
-Iniciar Sistema
+Iniciar
 
 //AVL(Gerenciamento de Processos)
 
-InserirAVL 1 EditorTexto 10 "PRONTO"
-InserirAVL 2 Compilador 5 "PRONTO"
-InserirAVL 3 NavegadorWeb 8 "PRONTO"
+InserirAVL 1 EditorTexto 10 PRONTO
+InserirAVL 2 Compilador 5 PRONTO
+InserirAVL 3 NavegadorWeb 8 PRONTO
 ListarAVL  
-TerminarAVL 2 Compilador
+TerminarAVL 2
 ListarAVL
 
 //Heap(Gerenciamento de Prioridades)
 
-AlterarHeap  1 10
-AlterarHeap 3 8
+AlterarHeap  1 8
+AlterarHeap 3 6
 AlterarHeap 1 3
 ListarHeap
-RemoverHeap 
+RemoverHeap
 ListarHeap
 
 //Tabela Hash(Gerenciamento de Estados)
 
-InserirHash 1 EditorTexto "PRONTO"
-InserirHash 3 NavegadorWeb "PRONTO"
-BloquearHash 3 NavegadorWeb
-ListarHash "PRONTO"
-ListarHah "BLOQUEADO"
-DesbloquearHash 3 NavegadorWeb
-ListarHash "PRONTO"
-RemoverHash 1 EditorTexto
-ListarHash "PRONTO"
+BloquearHash 3 
+ListarHash PRONTO
+ListarHash BLOQUEADO
+DesbloquearHash 3 
+ListarHash PRONTO
+RemoverHash 1
+ListarHash PRONTO
 
 //Simulação de Ações e Estados
 
-Executar 3 NavegadorWeb
-ListarHash "EXECUCAO"
-InserirAVL 4 Antivirus 4 "PRONTO"
+Executar 3 
+ListarHash EXECUCAO
+InserirAVL 4 Antivirus 4 PRONTO
 AlterarHeap 4 4
 ListarAVL  
 AlterarHeap 4 2
 RemoverHeap  
 BloquearHash 4 Antivirus
-ListarHash "BLOQUEADO"
+ListarHash BLOQUEADO
 
 //Encerramento do Sistema
 
-Terminar Processo 3 NavegadorWeb
-Terminar Processo 4 Antivirus
-Encerrar Sistema
+Terminar 3 NavegadorWeb
+Terminar 4 Antivirus
+Encerrar

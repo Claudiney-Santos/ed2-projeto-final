@@ -1,11 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include "processos.h"
-
-void chomp(char* str) {
-    str[strcspn(str,"\n")]=0;
-}
+#include "utils.h"
 
 int main() {
     int codigo=1, prioridade;

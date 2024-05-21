@@ -20,11 +20,14 @@ all: $(main)
 teste: $(main)
 	valgrind --leak-check=full $^
 
+$(obj_dir):
+	mkdir $@
+
 $(main): $(main_o) $(bibliotecas_so)
 	gcc -L$(build_dir) -Wl,-rpath=$(build_dir) -Wall -o $(main) $(main_o) $(patsubst %,-l%,$(bibliotecas))
 
-$(main_o): $(main_c)
-	gcc -c -Wall -Werror $^ -o $@
+$(main_o): $(main_c) $(obj_dir)
+	gcc -c -Wall -Werror $(main_c) -o $(main_o)
 
 $(bibliotecas_o): $(obj_dir)%.o : $(src_dir)%.c
 	gcc -c -Wall -Werror -fpic $^ -o $@

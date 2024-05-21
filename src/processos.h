@@ -15,9 +15,9 @@ typedef struct {
 } processo;
 
 processo* novoProcesso(int codigo, char* nome, int prioridade, statusCodigo status);
-int encerrarProcesso(processo** p);
+int encerraProcesso(processo** p);
 
-int mudarPrioridade(processo* p, int novaPrioridade);
-int mudarStatus(processo* p, statusCodigo novoStatus);
+int mudaPrioridade(processo* p, int novaPrioridade);
+int mudaStatus(processo* p, statusCodigo novoStatus);
 
 #endif

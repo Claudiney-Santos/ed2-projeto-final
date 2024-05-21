@@ -1,4 +1,4 @@
-bibliotecas := processos utils
+bibliotecas := processos utils lista
 
 mkfile_path := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 

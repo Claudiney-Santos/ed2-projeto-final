@@ -12,7 +12,7 @@ processo* novoProcesso(int codigo, char* nome, int prioridade, statusCodigo stat
     return p;
 }
 
-int encerrarProcesso(processo** p) {
+int encerraProcesso(processo** p) {
     if(!p||!(*p))
         return 1;
     if((*p)->nome)
@@ -22,14 +22,14 @@ int encerrarProcesso(processo** p) {
     return 0;
 }
 
-int mudarPrioridade(processo* p, int novaPrioridade) {
+int mudaPrioridade(processo* p, int novaPrioridade) {
     if(!p)
         return 1;
     p->prioridade=novaPrioridade;
     return 0;
 }
 
-int mudarStatus(processo* p, statusCodigo novoStatus) {
+int mudaStatus(processo* p, statusCodigo novoStatus) {
     if(!p)
         return 1;
     p->status=novoStatus;

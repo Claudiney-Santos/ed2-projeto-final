@@ -1,24 +1,41 @@
 bibliotecas := processos
 
 mkfile_path := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
-bibliotecas_o := $(patsubst %,%.o,$(bibliotecas))
-bibliotecas_so := $(patsubst %,lib%.so,$(bibliotecas))
 
-teste: main
-	valgrind --leak-check=full ./$^
+src_dir := $(mkfile_path)src/
+obj_dir := $(mkfile_path)obj/
+build_dir := $(mkfile_path)
 
-main: main.o $(bibliotecas_so)
-	gcc -L$(mkfile_path) -Wl,-rpath=$(mkfile_path) -Wall -o ./main ./main.o $(patsubst %,-l%,$(bibliotecas))
+bibliotecas_o := $(patsubst %,$(obj_dir)%.o,$(bibliotecas))
+bibliotecas_so := $(patsubst %,$(build_dir)lib%.so,$(bibliotecas))
 
-main.o: main.c
-	gcc -c -Wall -Werror main.c -o main.o
+main := $(build_dir)main
+main_c := $(patsubst $(build_dir)%,$(src_dir)%.c,$(main))
+main_o := $(patsubst $(build_dir)%,$(obj_dir)%.o,$(main))
 
-$(bibliotecas_o): %.o : %.c
+.PHONY: teste all clean cleanobj cleanbuild
+
+all: $(main)
+
+teste: $(main)
+	valgrind --leak-check=full $^
+
+$(main): $(main_o) $(bibliotecas_so)
+	gcc -L$(build_dir) -Wl,-rpath=$(build_dir) -Wall -o $(main) $(main_o) $(patsubst %,-l%,$(bibliotecas))
+
+$(main_o): $(main_c)
+	gcc -c -Wall -Werror $^ -o $@
+
+$(bibliotecas_o): $(obj_dir)%.o : $(src_dir)%.c
 	gcc -c -Wall -Werror -fpic $^ -o $@
 
-$(bibliotecas_so): lib%.so : %.o
+$(bibliotecas_so): $(build_dir)lib%.so : $(obj_dir)%.o
 	gcc -shared $^ -o $@
 
-clean:
-	rm -f main main.o $(bibliotecas_o) $(bibliotecas_so)
+clean: cleanobj cleanbuild
 
+cleanobj:
+	rm -f $(main_o) $(bibliotecas_o)
+
+cleanbuild:
+	rm -f $(main) $(bibliotecas_so)

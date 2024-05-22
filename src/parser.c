@@ -65,6 +65,7 @@ int defineParamInteger(token* t, int indice, int val) {
     if(!t->params[indice])
         return 3;
     t->params[indice]->val.integer=val;
+    return 0;
 }
 
 int defineParamString(token* t, int indice, char* val) {
@@ -76,6 +77,7 @@ int defineParamString(token* t, int indice, char* val) {
     if(!t->params[indice])
         return 3;
     t->params[indice]->val.string=val;
+    return 0;
 }
 
 int defineParamStatus(token* t, int indice, statusCodigo val) {
@@ -87,6 +89,7 @@ int defineParamStatus(token* t, int indice, statusCodigo val) {
     if(!t->params[indice])
         return 3;
     t->params[indice]->val.status=val;
+    return 0;
 }
 
 lista* tokenizaArquivo(FILE* arquivo) {
@@ -216,7 +219,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                 }
                 currentParam=t->paramLen-paramQnt;
                 if(isNumeric(palavra))
-                    defineParamInteger(t, currenParam, atoi(palavra));
+                    defineParamInteger(t, currentParam, atoi(palavra));
                 else if(isAlphabetic(palavra)) {
                     if(!strcmp(palavra, "pronto"))
                         defineParamStatus(t, currentParam, pronto);
@@ -225,7 +228,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     else if(!strcmp(palavra, "bloqueado"))
                         defineParamStatus(t, currentParam, bloqueado);
                     else {
-                        strTemp=(char*)malloc((strlen(palavra)+1)sizeof(char));
+                        strTemp=(char*)malloc((strlen(palavra)+1)*sizeof(char));
                         strcpy(strTemp, palavra);
                         defineParamString(t, currentParam, strTemp);
                         strTemp=NULL;

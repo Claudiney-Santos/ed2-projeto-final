@@ -74,7 +74,8 @@ int defineParamString(token* t, int indice, char* val) {
     t->params[indice]=(paramToken*)malloc(sizeof(paramToken));
     if(!t->params[indice])
         return 3;
-    t->params[indice]->val.string=val;
+    t->params[indice]->val.string=(char*)malloc((strlen(val)+1)*sizeof(char));
+    strcpy(t->params[indice]->val.string, val);
     return 0;
 }
 
@@ -97,7 +98,6 @@ lista* tokenizaArquivo(FILE* arquivo) {
     int paramQnt=0, currentParam=0, err=0, linhaNum, colunaNum;
     char linha[MAX_CHAR_LIDOS_POR_LINHA];
     char* palavra=NULL;
-    char* strTemp=NULL;
     lista* l=novaLista();
     token* t=NULL;
 
@@ -226,10 +226,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     else if(!strcmp(palavra, "bloqueado"))
                         defineParamStatus(t, currentParam, bloqueado);
                     else {
-                        strTemp=(char*)malloc((strlen(palavra)+1)*sizeof(char));
-                        strcpy(strTemp, palavra);
-                        defineParamString(t, currentParam, strTemp);
-                        strTemp=NULL;
+                        defineParamString(t, currentParam, palavra);
                     }
                 } else {
                     err=3;
@@ -264,3 +261,4 @@ lista* tokenizaArquivo(FILE* arquivo) {
     }
     return l;
 }
+

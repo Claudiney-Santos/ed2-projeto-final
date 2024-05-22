@@ -49,10 +49,8 @@ void liberaToken(token** t) {
     *t=NULL;
 }
 
-void liberaListaTokens(void* val, int indice, lista* l) {
+void liberaTokenLista(void* val) {
     token* t=(token*)val;
-    if(!t)
-        return;
     liberaToken(&t);
 }
 
@@ -262,9 +260,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
         }
         if(t)
             liberaToken(&t);
-        paraCada(l, liberaListaTokens);
-        free(l);
-        l=NULL;
+        liberaListaFunc(&l, liberaTokenLista);
     }
     return l;
 }

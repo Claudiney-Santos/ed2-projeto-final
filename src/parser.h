@@ -49,7 +49,7 @@ typedef struct {
 
 token* criaToken(comandosToken cmd);
 void liberaToken(token** t);
-void liberaListaTokens(void* val, int indice, lista* l);
+void liberaTokenLista(void* val);
 
 int defineParamInteger(token* t, int indice, int val);
 int defineParamString(token* t, int indice, char* val);

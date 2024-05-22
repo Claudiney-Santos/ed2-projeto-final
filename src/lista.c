@@ -29,11 +29,17 @@ lista* novaLista() {
 }
 
 void liberaLista(lista** l) {
+    liberaListaFunc(l, free);
+}
+
+void liberaListaFunc(lista** l, void(*f)(void*)) {
     if(!l||!(*l))
         return;
 
-    while((*l)->tamanho)
-        free(removeRaiz(*l));
+    if(f) {
+        while((*l)->tamanho)
+            (*f)(removeRaiz(*l));
+    }
 
     free(*l);
     *l=NULL;
@@ -179,7 +185,7 @@ void* removePosicao(lista* l, int indice) {
 }
 
 void paraCada(lista* l, void(*f)(void*, int, lista*)) {
-    if(!l)
+    if(!l||!f)
         return;
     no* n=NULL;
     int i=0;
@@ -189,3 +195,10 @@ void paraCada(lista* l, void(*f)(void*, int, lista*)) {
     }
 }
 
+void mapeiaLista(lista* l, void* (*f)(void*)) {
+    if(!l||!f)
+        return;
+    no* n=NULL;
+    for(n=l->raiz;n;n=n->prox)
+        n->val=(*f)(n->val);
+}

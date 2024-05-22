@@ -19,6 +19,7 @@ void* liberaNo(no** n);
 
 lista* novaLista();
 void liberaLista(lista** l);
+void liberaListaFunc(lista** l, void(*f)(void*));
 
 int insereRaiz(lista* l, void* val);
 int insereUltimo(lista* l, void* val);
@@ -31,5 +32,6 @@ void* removeUltimo(lista* l);
 void* removePosicao(lista* l, int indice);
 
 void paraCada(lista* l, void(*f)(void*, int, lista*));
+void mapeiaLista(lista* l, void* (*f)(void*));
 
 #endif

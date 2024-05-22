@@ -10,10 +10,9 @@ void veProcesso(lista* l);
 void veProcessos(lista* l);
 void removeProcesso(lista* l);
 
-void encerraProcessos(void* val, int indice, lista* _) {
+void encerraProcessoLista(void* val) {
     processo* p=(processo*)val;
-    free(p->nome);
-    p->nome=NULL;
+    encerraProcesso(&p);
 }
 
 int main() {
@@ -47,8 +46,8 @@ int main() {
         printf("\n");
     }
 
-    paraCada(l, encerraProcessos);
-    liberaLista(&l);
+    liberaListaFunc(&l, encerraProcessoLista);
+
 
     return 0;
 }

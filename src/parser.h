@@ -56,5 +56,6 @@ int defineParamString(token* t, int indice, char* val);
 int defineParamStatus(token* t, int indice, statusCodigo val);
 
 lista* tokenizaArquivo(FILE* arquivo);
+int validaListaToken(lista* l);
 
 #endif

@@ -346,3 +346,69 @@ lista* tokenizaArquivo(FILE* arquivo) {
     return l;
 }
 
+int validaListaToken(lista* l) {
+    if(!l)
+        return -1;
+    int err=0;
+    no* n=NULL;
+    token* t=NULL;
+    char cmd[20];
+    for(n=l->raiz;!err&&n;n=n->prox) {
+        t=(token*)n->val;
+        switch(t->cmd) {
+            case iniciar://t->paramLen=0
+            case encerrar:
+            case listarAvl:
+            case listarHeap:
+            case removerHeap:
+                break;
+            case terminarAvl://t->paramLen=1
+                strcpy(cmd, "TerminarAVL");
+            case bloquearHash:
+                strcpy(cmd, "BloquearHash");
+            case desbloquearHash:
+                strcpy(cmd, "DesbloquearHash");
+            case executar:
+                strcpy(cmd, "Executar");
+            case removerHash:
+                strcpy(cmd, "RemoverHash");
+                if(t->params[0]->type!=integer)
+                    err=1;
+                break;
+            case listarHash:
+                strcpy(cmd, "ListarHash");
+                if(t->params[0]->type!=status)
+                    err=1;
+                break;
+            case alterarHeap://t->paramLen=2
+                strcpy(cmd, "AlterarHeap");
+                if(t->params[0]->type!=integer)
+                    err=1;
+                else if(t->params[1]->type!=integer)
+                    err=2;
+                break;
+            case terminar:
+                strcpy(cmd, "Terminar");
+                if(t->params[0]->type!=integer)
+                    err=1;
+                else if(t->params[1]->type!=string)
+                    err=2;
+                break;
+            case inserirAvl://t->paramLen=4
+                strcpy(cmd, "InserirAVL");
+                if(t->params[0]->type!=integer)
+                    err=1;
+                else if(t->params[1]->type!=string)
+                    err=2;
+                else if(t->params[2]->type!=integer)
+                    err=3;
+                else if(t->params[3]->type!=status)
+                    err=4;
+                break;
+        }
+    }
+    if(!err)
+        printf("O comando %s recebeu o tipo incorreto em seu %d parametro\n", cmd, err);
+    return err;
+}
+

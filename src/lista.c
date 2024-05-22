@@ -36,10 +36,9 @@ void liberaListaFunc(lista** l, void(*f)(void*)) {
     if(!l||!(*l))
         return;
 
-    if(f) {
+    if(f)
         while((*l)->tamanho)
             (*f)(removeRaiz(*l));
-    }
 
     free(*l);
     *l=NULL;

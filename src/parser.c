@@ -32,6 +32,10 @@ token* criarToken(comandosToken cmd) {
                 break;
         }
         t->params=(paramToken**)calloc(t->paramLen,sizeof(paramToken*));
+        if(!t->params) {
+            free(t);
+            t=NULL;
+        }
     }
     return t;
 }
@@ -44,6 +48,7 @@ void liberaToken(token** t) {
         if((*t)->params[i]->type==string)
             free((*t)->params[i]->val.string);
         free((*t)->params[i]);
+        (*t)->params[i]=NULL;
     }
     free(*t);
     *t=NULL;
@@ -56,37 +61,39 @@ void liberaTokenLista(void* val) {
 
 int defineParamInteger(token* t, int indice, int val) {
     if(!t)
+        return -1;
+    else if(indice>=t->paramLen)
         return 1;
-    else if(t->paramLen<=indice)
-        return 2;
     t->params[indice]=(paramToken*)malloc(sizeof(paramToken));
     if(!t->params[indice])
-        return 3;
+        return 2;
     t->params[indice]->val.integer=val;
     return 0;
 }
 
 int defineParamString(token* t, int indice, char* val) {
     if(!t)
+        return -1;
+    else if(indice>=t->paramLen)
         return 1;
-    else if(t->paramLen<=indice)
-        return 2;
     t->params[indice]=(paramToken*)malloc(sizeof(paramToken));
     if(!t->params[indice])
-        return 3;
+        return 2;
     t->params[indice]->val.string=(char*)malloc((strlen(val)+1)*sizeof(char));
+    if(!t->params[indice])
+        return 2;
     strcpy(t->params[indice]->val.string, val);
     return 0;
 }
 
 int defineParamStatus(token* t, int indice, statusCodigo val) {
     if(!t)
+        return -1;
+    else if(indice>=t->paramLen)
         return 1;
-    else if(t->paramLen<=indice)
-        return 2;
     t->params[indice]=(paramToken*)malloc(sizeof(paramToken));
     if(!t->params[indice])
-        return 3;
+        return 2;
     t->params[indice]->val.status=val;
     return 0;
 }
@@ -95,7 +102,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
     if(!arquivo)
         return NULL;
 
-    int paramQnt=0, currentParam=0, err=0, linhaNum, colunaNum;
+    int paramQnt=0, currentParam=0, err=0, errT=0, linhaNum, colunaNum;
     char linha[MAX_CHAR_LIDOS_POR_LINHA];
     char* palavra=NULL;
     lista* l=novaLista();
@@ -118,6 +125,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(iniciar);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "encerrar")) {
                 if(paramQnt) {
@@ -125,6 +136,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(encerrar);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "inseriravl")) {
                 if(paramQnt) {
@@ -132,6 +147,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(inserirAvl);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "terminaravl")) {
                 if(paramQnt) {
@@ -139,6 +158,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(terminarAvl);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "listaravl")) {
                 if(paramQnt) {
@@ -146,6 +169,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(listarAvl);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "alterarheap")) {
                 if(paramQnt) {
@@ -153,6 +180,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(alterarHeap);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "removerheap")) {
                 if(paramQnt) {
@@ -160,6 +191,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(removerHeap);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "listarheap")) {
                 if(paramQnt) {
@@ -167,6 +202,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(listarHeap);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "bloquearhash")) {
                 if(paramQnt) {
@@ -174,6 +213,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(bloquearHash);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "desbloquearhash")) {
                 if(paramQnt) {
@@ -181,6 +224,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(desbloquearHash);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "executar")) {
                 if(paramQnt) {
@@ -188,6 +235,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(executar);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "removerhash")) {
                 if(paramQnt) {
@@ -195,6 +246,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(removerHash);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "listarhash")) {
                 if(paramQnt) {
@@ -202,6 +257,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(listarHash);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else if(!strcmp(palavra, "terminar")) {
                 if(paramQnt) {
@@ -209,6 +268,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 t=criarToken(terminar);
+                if(!t) {
+                    err=4;
+                    continue;
+                }
                 paramQnt=t->paramLen;
             } else {
                 if(!paramQnt) {
@@ -216,22 +279,37 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 currentParam=t->paramLen-paramQnt;
+                errT=0;
                 if(isNumeric(palavra))
-                    defineParamInteger(t, currentParam, atoi(palavra));
+                    errT=defineParamInteger(t, currentParam, atoi(palavra));
                 else if(isAlphabetic(palavra)) {
                     if(!strcmp(palavra, "pronto"))
-                        defineParamStatus(t, currentParam, pronto);
+                        errT=defineParamStatus(t, currentParam, pronto);
                     else if(!strcmp(palavra, "execucao"))
-                        defineParamStatus(t, currentParam, execucao);
+                        errT=defineParamStatus(t, currentParam, execucao);
                     else if(!strcmp(palavra, "bloqueado"))
-                        defineParamStatus(t, currentParam, bloqueado);
-                    else {
-                        defineParamString(t, currentParam, palavra);
-                    }
+                        errT=defineParamStatus(t, currentParam, bloqueado);
+                    else
+                        errT=defineParamString(t, currentParam, palavra);
                 } else {
                     err=3;
-        return NULL;
                     continue;
+                }
+                switch(errT) {
+                    case 0:
+                        break;
+                    case -1:
+                        err=-1;
+                        break;
+                    case 1:
+                        err=-1;
+                        break;
+                    case 2:
+                        err=2;
+                        break;
+                    default:
+                        err=errT;
+                        break;
                 }
                 paramQnt--;
                 if(!paramQnt) {
@@ -253,6 +331,12 @@ lista* tokenizaArquivo(FILE* arquivo) {
                 break;
             case 3:
                 printf("Era esperado um parametro, porem foi recebido uma string invalida (nem numerica, nem alfabetica)\n");
+                break;
+            case 4:
+                printf("Nao ha memoria suficiente para alocacao\n");
+                break;
+            default:
+                printf("Erro desconhecido, codigo %d\n", err);
                 break;
         }
         if(t)

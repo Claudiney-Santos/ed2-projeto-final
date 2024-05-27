@@ -2,50 +2,82 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils.h"
 #include "lista.h"
 #include "parser.h"
 
 #define INPUT_TAMANHO 50
 
+typedef struct {
+    FILE* arq;
+    char* nome;
+    lista* l;
+} script;
+
+script* novoScript() {
+    script* s=(script*)malloc(sizeof(script));
+    if(s) {
+        s->arq=NULL;
+        s->nome=(char*)malloc(INPUT_TAMANHO*sizeof(script));
+        s->nome[0]=0;
+        s->l=NULL;
+    }
+    return s;
+}
+
+void liberaScript(script** s) {
+    if(!s||!(*s))
+        return;
+    fclose((*s)->arq);
+    free((*s)->nome);
+    liberaListaFunc(&((*s)->l), liberaTokenLista);
+    free(*s);
+    *s=NULL;
+}
+
 int mostraComandos(lista* l);
-int carregaScript(FILE** arquivo, lista** l);
+int carregaScript(script* arquivo);
 
 void encerraProcessoLista(void* val) {
     processo* p=(processo*)val;
-    encecerraProcesso(&p);
+    encerraProcesso(&p);
 }
 
 int main(int argc, char** argv) {
     long int escolha=1;
     int err=0;
     char input[INPUT_TAMANHO];
-    char nomeArquivo[INPUT_TAMANHO];
     char* saida;
-    FILE* arquivo=NULL;
-    lista* l=NULL;
+    script* arquivo=novoScript();
     char rodar=1;
 
     while(rodar&&!err) {
-        if(arquivo)
-            printf("Arquivo carregado: \"%s\"\n", nomeArquivo);
+        if(arquivo->l)
+            printf("Arquivo carregado: \"%s\"\n", arquivo->nome);
         else
             printf("Nenhum arquivo carregado\n");
-        printf("===\n")
+        printf("===\n");
         printf("1) Iniciar simulacao\n2) Ver script carregado\n3) Carregar script\n0) Sair\n\nEscolha: ");
         fgets(input, INPUT_TAMANHO, stdin);
         escolha=strtol(input, &saida, 10);
         if(!strcmp(input,saida))
             continue;
         switch(escolha) {
+            case 0:
+                rodar=0;
+                break;
             case 1:
                 break;
             case 2:
-                err=mostraComandos(l);
+                err=mostraComandos(arquivo->l);
                 break;
             case 3:
-                err=carregaScript(&arquivo, &l);
+                err=carregaScript(arquivo);
+                break;
         }
+        printf("\n===\n");
     }
+    liberaScript(&arquivo);
     return 0;
 }
 
@@ -110,27 +142,28 @@ int mostraComandos(lista* l) {
     return 0;
 }
 
-int carregaScript(FILE** arquivo, lista** l) {
-    char input[INPUT_TAMANHO];
-    if(!arquivo||!l)
+int carregaScript(script* arquivo) {
+    if(!arquivo)
         return 1;
-    else if(*arquivo)
-        fclose(*arquivo);
-    if(*l)
-        liberaListaFunc(l, encerraProcessoLista);
+    else if(arquivo->arq)
+        fclose(arquivo->arq);
+    if(arquivo->l)
+        liberaListaFunc(&(arquivo->l), liberaTokenLista);
     printf("Informe o nome do arquivo: ");
-    fgets(input, INPUT_TAMANHO, stdin);
-    chomp(input);
-    *arquivo=fopen(input, "r");
-    if(!(*arquivo)) {
-        printf("Nao foi possivel abrir o arquivo \"%s\"\n", input);
-        return 2;
+    fgets(arquivo->nome, INPUT_TAMANHO, stdin);
+    chomp(arquivo->nome);
+    arquivo->arq=fopen(arquivo->nome, "r");
+    if(!arquivo->arq) {
+        printf("Nao foi possivel abrir o arquivo \"%s\"\n", arquivo->nome);
+        arquivo->nome[0]=0;
+        return 0;
     }
-    *l=tokenizaLista(*arquivo);
-    if(!l) {
-        fclose(*arquivo);
-        *arquivo=NULL;
-        return 3;
+    arquivo->l=tokenizaArquivo(arquivo->arq);
+    if(!arquivo->l) {
+        fclose(arquivo->arq);
+        arquivo->arq=NULL;
+        arquivo->nome[0]=0;
+        return 2;
     }
     return 0;
 }

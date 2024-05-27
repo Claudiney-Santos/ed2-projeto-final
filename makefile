@@ -1,4 +1,4 @@
-bibliotecas := utils lista processos parser hash heap
+bibliotecas := utils lista processos parser avl hash heap
 
 mkfile_path := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 

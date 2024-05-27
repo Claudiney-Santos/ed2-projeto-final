@@ -50,6 +50,8 @@ void liberaToken(token** t) {
         free((*t)->params[i]);
         (*t)->params[i]=NULL;
     }
+    free((*t)->params);
+    (*t)->params=NULL;
     free(*t);
     *t=NULL;
 }
@@ -67,6 +69,7 @@ int defineParamInteger(token* t, int indice, int val) {
     t->params[indice]=(paramToken*)malloc(sizeof(paramToken));
     if(!t->params[indice])
         return 2;
+    t->params[indice]->type=integer;
     t->params[indice]->val.integer=val;
     return 0;
 }
@@ -79,9 +82,13 @@ int defineParamString(token* t, int indice, char* val) {
     t->params[indice]=(paramToken*)malloc(sizeof(paramToken));
     if(!t->params[indice])
         return 2;
+    t->params[indice]->type=string;
     t->params[indice]->val.string=(char*)malloc((strlen(val)+1)*sizeof(char));
-    if(!t->params[indice])
+    if(!t->params[indice]->val.string) {
+        free(t->params[indice]);
+        t->params[indice]=NULL;
         return 2;
+    }
     strcpy(t->params[indice]->val.string, val);
     return 0;
 }
@@ -94,6 +101,7 @@ int defineParamStatus(token* t, int indice, statusCodigo val) {
     t->params[indice]=(paramToken*)malloc(sizeof(paramToken));
     if(!t->params[indice])
         return 2;
+    t->params[indice]->type=status;
     t->params[indice]->val.status=val;
     return 0;
 }
@@ -108,7 +116,16 @@ lista* tokenizaArquivo(FILE* arquivo) {
     lista* l=novaLista();
     token* t=NULL;
 
-    linhaNum=-1;
+    //int err=0, linhaNum=-1, colunaNum=-1;
+    //char linha[MAX_CHAR_LIDOS_POR_LINHA];
+    //char* palavra=NULL;
+    //token* t=NULL;
+    //lista* l=novaLista();
+
+    if(!l)
+        err=4;
+
+    linhaNum=0;
     while(!err&&fgets(linha, MAX_CHAR_LIDOS_POR_LINHA, arquivo)) {
         linhaNum++;
         if(!strncmp(linha, "//", 2))
@@ -116,7 +133,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
         chomp(linha);
         lowerString(linha);
         palavra=strtok(linha," ");
-        colunaNum=-1;
+        colunaNum=0;
         while(!err&&palavra) {
             colunaNum++;
             if(!strcmp(palavra, "iniciar")) {
@@ -275,6 +292,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                 paramQnt=t->paramLen;
             } else {
                 if(!paramQnt) {
+                    printf("Palavra magica: \"%s\"\n", palavra);
                     err=2;
                     continue;
                 }
@@ -296,8 +314,6 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 switch(errT) {
-                    case 0:
-                        break;
                     case -1:
                         err=-1;
                         break;
@@ -305,17 +321,19 @@ lista* tokenizaArquivo(FILE* arquivo) {
                         err=-1;
                         break;
                     case 2:
-                        err=2;
+                        err=4;
                         break;
                     default:
                         err=errT;
                         break;
                 }
+                if(err)
+                    continue;
                 paramQnt--;
-                if(!paramQnt) {
-                    insereUltimo(l, (void*)t);
-                    t=NULL;
-                }
+            }
+            if(!paramQnt) {
+                insereUltimo(l, (void*)t);
+                t=NULL;
             }
             palavra=strtok(NULL," ");
         }
@@ -339,8 +357,11 @@ lista* tokenizaArquivo(FILE* arquivo) {
                 printf("Erro desconhecido, codigo %d\n", err);
                 break;
         }
-        if(t)
+        if(t) {
+            printf("Ultimo comando registrado: %d\n", t->cmd);
             liberaToken(&t);
+        } else if(l)
+            printf("Ultimo comando registrado: %d\n", ((token*)pegaUltimo(l))->cmd);
         liberaListaFunc(&l, liberaTokenLista);
     }
     return l;

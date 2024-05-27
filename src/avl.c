@@ -1,4 +1,5 @@
 #include "avl.h"
+#include <stdlib.h>
 
 noAvl* novoNoAvl(void* val) {
     noAvl* n=(noAvl*)malloc(sizeof(noAvl));
@@ -19,15 +20,39 @@ void* liberaNoAvl(noAvl** n) {
     return val;
 }
 
-int insereAvlNo(noAvl** n, void* val, int(*extraiChave)(void*)) {
+int pegaAltura(noAvl* n) {
+    return n ? n->altura : -1;
+}
+
+int calculaAlturaSimples(noAvl* n) {
     if(!n)
         return -1;
+    n->altura=1+max(pegaAltura(n->esq), pegaAltura(n->dir));
+    return n->altura;
+}
+
+int pegaBalanceamento(noAvl* n) {
+    return n ? pegaAltura(n->dir) - pegaAltura(n->esq) : 0;
+}
+
+int insereAvlNo(noAvl** n, void* val, int(*extraiChave)(void*)) {
+    if(!n)
+        return 0;
     else if(!(*n)) {
         *n=novoNoAvl(val);
-        return 0;
+        return 1;
     }
-    int chave=extraiChave(val), chaveN=extraiChave(*n);
-    // IMPLEMENTAÇÃO INCOMPLETA
+    int chave=extraiChave(val), chaveN=extraiChave(*n), fb;
+    noAvl** m=chave<chaveN ? &((*n)->esq) : &((*n)->dir);
+    if(chave==chaveN)
+        return 0;
+    else if(insereAvl(m, val, extraiChave)) {
+        calculaAltura(*n);
+        fb=pegaBalanceamento(*n);
+        if(abs(fb)>1) {
+            
+        }
+    }
 }
 
 avl* novaAvl(int (*extraiChave)(void*)) {

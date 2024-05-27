@@ -16,6 +16,10 @@ typedef struct {
 noAvl* novoNoAvl(void* val);
 void* liberaNoAvl(noAvl** n);
 
+int pegaAltura(noAvl* n);
+int calculaAlturaSimples(noAvl* n);
+int pegaBalanceamento(noAvl* n);
+
 int insereAvlNo(noAvl** n, void* val, int(*extraiChave)(void*));
 
 avl* novaAvl(int (*extraiChave)(void*));

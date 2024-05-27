@@ -39,7 +39,7 @@ AlterarHeap 4 4
 ListarAVL  
 AlterarHeap 4 2
 RemoverHeap  
-BloquearHash 4 Antivirus
+BloquearHash 4
 ListarHash BLOQUEADO
 
 //Encerramento do Sistema

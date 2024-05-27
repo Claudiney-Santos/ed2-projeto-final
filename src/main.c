@@ -28,9 +28,12 @@ script* novoScript() {
 void liberaScript(script** s) {
     if(!s||!(*s))
         return;
-    fclose((*s)->arq);
-    free((*s)->nome);
-    liberaListaFunc(&((*s)->l), liberaTokenLista);
+    if((*s)->arq)
+        fclose((*s)->arq);
+    if((*s)->nome)
+        free((*s)->nome);
+    if((*s)->l)
+        liberaListaFunc(&((*s)->l), liberaTokenLista);
     free(*s);
     *s=NULL;
 }
@@ -163,7 +166,7 @@ int carregaScript(script* arquivo) {
         fclose(arquivo->arq);
         arquivo->arq=NULL;
         arquivo->nome[0]=0;
-        return 2;
+        //return 2;
     }
     return 0;
 }

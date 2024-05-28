@@ -146,6 +146,7 @@ int mostraComandos(lista* l) {
 }
 
 int carregaScript(script* arquivo) {
+    int err=0;
     if(!arquivo)
         return 1;
     else if(arquivo->arq)
@@ -162,10 +163,13 @@ int carregaScript(script* arquivo) {
         return 0;
     }
     arquivo->l=tokenizaArquivo(arquivo->arq);
-    if(!arquivo->l) {
+    err=validaListaToken(arquivo->l);
+    if(!arquivo->l||err) {
         fclose(arquivo->arq);
         arquivo->arq=NULL;
         arquivo->nome[0]=0;
+        if(arquivo->l)
+            liberaListaFunc(&(arquivo->l), liberaTokenLista);
         //return 2;
     }
     return 0;

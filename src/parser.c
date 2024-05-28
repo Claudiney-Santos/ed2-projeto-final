@@ -111,6 +111,8 @@ lista* tokenizaArquivo(FILE* arquivo) {
         return NULL;
 
     int paramQnt=0, currentParam=0, err=0, errT=0, linhaNum, colunaNum;
+    //paramTokenType tipoEsperado, tipoRecebido;
+    //paramTokenType tiposEsperados[4];
     char linha[MAX_CHAR_LIDOS_POR_LINHA];
     char* palavra=NULL;
     lista* l=novaLista();
@@ -169,6 +171,10 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=integer;
+                //tiposEsperados[1]=string;
+                //tiposEsperados[2]=integer;
+                //tiposEsperados[3]=integer;
             } else if(!strcmp(palavra, "terminaravl")) {
                 if(paramQnt) {
                     err=1;
@@ -180,6 +186,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=integer;
             } else if(!strcmp(palavra, "listaravl")) {
                 if(paramQnt) {
                     err=1;
@@ -202,6 +209,8 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=integer;
+                //tiposEsperados[1]=integer;
             } else if(!strcmp(palavra, "removerheap")) {
                 if(paramQnt) {
                     err=1;
@@ -235,6 +244,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=integer;
             } else if(!strcmp(palavra, "desbloquearhash")) {
                 if(paramQnt) {
                     err=1;
@@ -246,6 +256,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=integer;
             } else if(!strcmp(palavra, "executar")) {
                 if(paramQnt) {
                     err=1;
@@ -257,6 +268,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=integer;
             } else if(!strcmp(palavra, "removerhash")) {
                 if(paramQnt) {
                     err=1;
@@ -268,6 +280,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=integer;
             } else if(!strcmp(palavra, "listarhash")) {
                 if(paramQnt) {
                     err=1;
@@ -279,6 +292,7 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=status;
             } else if(!strcmp(palavra, "terminar")) {
                 if(paramQnt) {
                     err=1;
@@ -290,6 +304,8 @@ lista* tokenizaArquivo(FILE* arquivo) {
                     continue;
                 }
                 paramQnt=t->paramLen;
+                //tiposEsperados[0]=integer;
+                //tiposEsperados[1]=string;
             } else {
                 if(!paramQnt) {
                     printf("Palavra magica: \"%s\"\n", palavra);
@@ -370,11 +386,14 @@ lista* tokenizaArquivo(FILE* arquivo) {
 int validaListaToken(lista* l) {
     if(!l)
         return -1;
-    int err=0;
+    int i, err=0;
+    paramTokenType tipoEsperado, tipoRecebido;
+    paramTokenType tiposEsperados[4];
     no* n=NULL;
     token* t=NULL;
     char cmd[20];
     for(n=l->raiz;!err&&n;n=n->prox) {
+        cmd[0]=0;
         t=(token*)n->val;
         switch(t->cmd) {
             case iniciar://t->paramLen=0
@@ -382,54 +401,129 @@ int validaListaToken(lista* l) {
             case listarAvl:
             case listarHeap:
             case removerHeap:
-                break;
+                continue;
             case terminarAvl://t->paramLen=1
-                strcpy(cmd, "TerminarAVL");
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "TerminarAVL");
             case bloquearHash:
-                strcpy(cmd, "BloquearHash");
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "BloquearHash");
             case desbloquearHash:
-                strcpy(cmd, "DesbloquearHash");
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "DesbloquearHash");
             case executar:
-                strcpy(cmd, "Executar");
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "Executar");
             case removerHash:
-                strcpy(cmd, "RemoverHash");
-                if(t->params[0]->type!=integer)
-                    err=1;
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "RemoverHash");
+                tiposEsperados[0]=integer;
+                //if(t->params[0]->type!=integer) {
+                //    tipoEsperado=integer;
+                //    tipoRecebido=t->params[0]->type;
+                //    err=1;
+                //}
                 break;
             case listarHash:
-                strcpy(cmd, "ListarHash");
-                if(t->params[0]->type!=status)
-                    err=1;
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "ListarHash");
+                tiposEsperados[0]=status;
+                //if(t->params[0]->type!=status) {
+                //    tipoEsperado=status;
+                //    tipoRecebido=t->params[0]->type;
+                //    err=1;
+                //}
                 break;
             case alterarHeap://t->paramLen=2
-                strcpy(cmd, "AlterarHeap");
-                if(t->params[0]->type!=integer)
-                    err=1;
-                else if(t->params[1]->type!=integer)
-                    err=2;
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "AlterarHeap");
+                tiposEsperados[0]=integer;
+                tiposEsperados[1]=integer;
+                //if(t->params[0]->type!=integer) {
+                //    tipoEsperado=integer;
+                //    tipoRecebido=t->params[0]->type;
+                //    err=1;
+                //} else if(t->params[1]->type!=integer) {
+                //    tipoEsperado=integer;
+                //    tipoRecebido=t->params[1]->type;
+                //    err=2;
+                //}
                 break;
             case terminar:
-                strcpy(cmd, "Terminar");
-                if(t->params[0]->type!=integer)
-                    err=1;
-                else if(t->params[1]->type!=string)
-                    err=2;
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "Terminar");
+                tiposEsperados[0]=integer;
+                tiposEsperados[1]=string;
+                //if(t->params[0]->type!=integer) {
+                //    tipoEsperado=integer;
+                //    tipoRecebido=t->params[0]->type;
+                //    err=1;
+                //} else if(t->params[1]->type!=string) {
+                //    tipoEsperado=string;
+                //    tipoRecebido=t->params[1]->type;
+                //    err=2;
+                //}
                 break;
             case inserirAvl://t->paramLen=4
-                strcpy(cmd, "InserirAVL");
-                if(t->params[0]->type!=integer)
-                    err=1;
-                else if(t->params[1]->type!=string)
-                    err=2;
-                else if(t->params[2]->type!=integer)
-                    err=3;
-                else if(t->params[3]->type!=status)
-                    err=4;
+                if(!strcmp(cmd,""))
+                    strcpy(cmd, "InserirAVL");
+                tiposEsperados[0]=integer;
+                tiposEsperados[1]=string;
+                tiposEsperados[2]=integer;
+                tiposEsperados[3]=status;
+                //if(t->params[0]->type!=integer) {
+                //    tipoEsperado=integer;
+                //    tipoRecebido=t->params[0]->type;
+                //    err=1;
+                //} else if(t->params[1]->type!=string) {
+                //    tipoEsperado=string;
+                //    tipoRecebido=t->params[1]->type;
+                //    err=2;
+                //} else if(t->params[2]->type!=integer) {
+                //    tipoEsperado=integer;
+                //    tipoRecebido=t->params[2]->type;
+                //    err=3;
+                //} else if(t->params[3]->type!=status) {
+                //    tipoEsperado=status;
+                //    tipoRecebido=t->params[3]->type;
+                //    err=4;
+                //}
                 break;
         }
+        for(i=0;!err&&i<t->paramLen;i++)
+            if(tiposEsperados[i]!=t->params[i]->type) {
+                tipoEsperado=tiposEsperados[i];
+                tipoRecebido=t->params[i]->type;
+                err=i+1;
+            }
     }
-    if(!err)
-        printf("O comando %s recebeu o tipo incorreto em seu %d parametro\n", cmd, err);
+    if(err) {
+        printf("O comando %s recebeu o tipo incorreto em seu %d parametro\nTipo esperado: ", cmd, err);
+        switch(tipoEsperado) {
+            case integer:
+                printf("integer");
+                break;
+            case string:
+                printf("string");
+                break;
+            case status:
+                printf("status");
+                break;
+        }
+        printf("\nTipo recebido: ");
+        switch(tipoRecebido) {
+            case integer:
+                printf("integer");
+                break;
+            case string:
+                printf("string");
+                break;
+            case status:
+                printf("status");
+                break;
+        }
+        printf("\n");
+    }
     return err;
 }
 

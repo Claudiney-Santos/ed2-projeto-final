@@ -55,7 +55,8 @@ int defineParamInteger(token* t, int indice, int val);
 int defineParamString(token* t, int indice, char* val);
 int defineParamStatus(token* t, int indice, statusCodigo val);
 
+char* pegaTipoParamTokenType(paramTokenType t);
+
 lista* tokenizaArquivo(FILE* arquivo);
-int validaListaToken(lista* l);
 
 #endif

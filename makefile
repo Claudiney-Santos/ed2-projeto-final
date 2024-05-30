@@ -1,4 +1,4 @@
-bibliotecas := processos utils lista parser
+bibliotecas := utils lista processos parser hash
 
 mkfile_path := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 

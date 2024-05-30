@@ -5,6 +5,7 @@
 #include "utils.h"
 #include "lista.h"
 #include "parser.h"
+#include "hash.h"
 
 #define INPUT_TAMANHO 50
 
@@ -48,11 +49,19 @@ void encerraProcessoLista(void* val) {
 
 int main(int argc, char** argv) {
     long int escolha=1;
-    int err=0;
+    int err=0, i;
+    char rodar=1;
     char input[INPUT_TAMANHO];
     char* saida;
     script* arquivo=novoScript();
-    char rodar=1;
+    hash* h[4];
+    h[0]=novoHash(101, funcHash1, colisaoLinear);
+    h[1]=novoHash(101, funcHash1, colisaoQuadratica);
+    h[2]=novoHash(101, funcHash2, colisaoLinear);
+    h[3]=novoHash(101, funcHash2, colisaoQuadratica);
+
+    defineHash(h[0], 2134, (void*)&escolha);
+    printf("Escolha: %li\n", *(long int*)removeHash(h[0], 2134));
 
     while(rodar&&!err) {
         if(arquivo->l)
@@ -80,6 +89,9 @@ int main(int argc, char** argv) {
         }
         printf("\n===\n");
     }
+    for(i=0;i<4;i++)
+        liberaHashFunc(&h[i], encerraProcessoLista);
+
     liberaScript(&arquivo);
     return 0;
 }

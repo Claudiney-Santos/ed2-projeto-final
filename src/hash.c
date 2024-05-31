@@ -127,8 +127,6 @@ int colisaoLinear(hash* h, int chave) {
     if(!h||!h->capacidade)
         return -1;
     int i=0, k, key=mod(h->funcHash(chave), h->capacidade);
-    if(key<0)
-        return -1;
     do {
         k=(key+i)%h->capacidade;
         i++;
@@ -140,8 +138,6 @@ int colisaoQuadratica(hash* h, int chave) {
     if(!h||!h->capacidade)
         return -1;
     int i=0, k, key=mod(h->funcHash(chave), h->capacidade);
-    if(key<0)
-        return -1;
     do {
         k=(key+i*i)%h->capacidade;
         i++;

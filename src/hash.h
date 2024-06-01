@@ -2,7 +2,6 @@
 #define _HASH_H_
 
 #include <stdlib.h>
-#include "lista.h"
 
 typedef struct {
     int chave;
@@ -14,7 +13,7 @@ typedef struct Hash {
     size_t tamanho;
     int (*funcHash)(int);
     int (*funcColisao)(struct Hash*, int, int);
-    //int* chaves;
+    int* chaves;
     parHash** pares;
 } hash;
 

@@ -33,17 +33,17 @@ hash* novoHash(size_t capacidade, int (*funcHash)(int), int (*funcColisao)(hash*
         h->capacidade=capacidade;
         h->funcHash=funcHash;
         h->funcColisao=funcColisao;
-        //h->chaves=(int*)malloc(capacidade*sizeof(int));
-        //if(!h->chaves)
-        //    err=1;
+        h->chaves=(int*)malloc(capacidade*sizeof(int));
+        if(!h->chaves)
+            err=1;
         if(!err) {
             h->pares=(parHash**)calloc(capacidade,sizeof(parHash*));
             if(!h->pares)
                 err=1;
         }
         if(err) {
-            //if(h->chaves)
-            //    free(h->chaves);
+            if(h->chaves)
+                free(h->chaves);
             if(h->pares)
                 free(h->pares);
             free(h);
@@ -61,13 +61,16 @@ void liberaHashFunc(hash** h, void(*f)(void*)) {
     if(!h||!(*h))
         return;
     int i;
-    for(i=0;(*h)->tamanho&&i<(*h)->capacidade;i++)
-        if((*h)->pares[i]) {
-            (*f)(liberaParHash(&(*h)->pares[i]));
-            (*h)->tamanho--;
-        }
+    //for(i=0;(*h)->tamanho&&i<(*h)->capacidade;i++)
+    //    if((*h)->pares[i]) {
+    //        (*f)(liberaParHash(&(*h)->pares[i]));
+    //        (*h)->tamanho--;
+    //    }
+    for(i=0;i<(*h)->tamanho;i++)
+        (*f)(removeHash(*h, (*h)->chaves[i]));
+
     free((*h)->pares);
-    //free((*h)->chaves);
+    free((*h)->chaves);
     free(*h);
     *h=NULL;
 }
@@ -76,25 +79,25 @@ int expandeHash(hash* h) {
     if(!h)
         return -1;
     int err=0;
-    //int* tempInt=NULL;
+    int* tempInt=NULL;
     parHash** tempPar=NULL;
     size_t novaCapacidade=2*h->capacidade;
     tempPar=realloc(h->pares, novaCapacidade);
     if(!tempPar)
         err=1;
-    //if(!err) {
-    //    tempInt=realloc(h->chaves, novaCapacidade);
-    //    if(!tempInt)
-    //        err=1;
-    //}
+    if(!err) {
+        tempInt=realloc(h->chaves, novaCapacidade);
+        if(!tempInt)
+            err=1;
+    }
     if(err) {
         if(tempPar)
             h->pares=realloc(tempPar, h->capacidade);
-        //if(tempInt)
-        //    h->chaves=realloc(tempInt, h->capacidade);
+        if(tempInt)
+            h->chaves=realloc(tempInt, h->capacidade);
     } else {
         h->pares=tempPar;
-        //h->chaves=tempInt;
+        h->chaves=tempInt;
         h->capacidade=novaCapacidade;
     }
     return err;
@@ -112,7 +115,7 @@ void* defineHash(hash* h, int chave, void* valor) {
         err=expandeHash(h);
     if(err)
         return NULL;
-    int key=h->funcColisao(h, chave, 0);
+    int key=h->funcColisao(h, chave, 0), i;
     void* val=NULL;
     if(key<0||key>=h->capacidade)
         return NULL;
@@ -120,11 +123,16 @@ void* defineHash(hash* h, int chave, void* valor) {
         val=h->pares[key]->valor;
         h->pares[key]->valor=valor;
         if(h->pares[key]->chave!=chave) {
+            for(i=0;i<h->tamanho;i++)
+                if(h->chaves[i]==h->pares[key]->chave) {
+                    h->chaves[i]=chave;
+                    break;
+                }
             h->pares[key]->chave=chave;
-            // IMPLEMENTAR UMA AVL PARA MELHOR OTIMIZAÇÃO NA HORA DE INSERIR/REMOVER CHAVES
         }
     } else {
         h->pares[key]=novoParHash(chave, valor);
+        h->chaves[h->tamanho]=chave;
         h->tamanho++;
     }
     return val;
@@ -161,6 +169,11 @@ void* removeHash(hash* h, int chave) {
     (*p)->chave=temp.chave;
     (*p)->valor=temp.valor;
 
+    for(i=0;i<h->tamanho;i++)
+        if(h->chaves[i]==chave) {
+            h->chaves[i]=h->chaves[h->tamanho-1];
+            break;
+        }
     h->tamanho--;
     return liberaParHash(p);
 }

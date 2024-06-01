@@ -26,14 +26,26 @@ void* liberaParHash(parHash** ph) {
 hash* novoHash(size_t capacidade, int (*funcHash)(int), int (*funcColisao)(hash*, int, int)) {
     if(!funcHash||!funcColisao)
         return NULL;
+    int err=0;
     hash* h=(hash*)malloc(sizeof(hash));
     if(h) {
         h->tamanho=0;
         h->capacidade=capacidade;
         h->funcHash=funcHash;
         h->funcColisao=funcColisao;
-        h->pares=(parHash**)calloc(capacidade,sizeof(parHash*));
-        if(!h->pares) {
+        h->chaves=(int*)malloc(capacidade*sizeof(int));
+        if(!h->chaves)
+            err=1;
+        if(!err) {
+            h->pares=(parHash**)calloc(capacidade,sizeof(parHash*));
+            if(!h->pares)
+                err=1;
+        }
+        if(err) {
+            if(h->chaves)
+                free(h->chaves);
+            if(h->pares)
+                free(h->pares);
             free(h);
             h=NULL;
         }
@@ -55,6 +67,7 @@ void liberaHashFunc(hash** h, void(*f)(void*)) {
             (*h)->tamanho--;
         }
     free((*h)->pares);
+    free((*h)->chaves);
     free(*h);
     *h=NULL;
 }
@@ -62,14 +75,29 @@ void liberaHashFunc(hash** h, void(*f)(void*)) {
 int expandeHash(hash* h) {
     if(!h)
         return -1;
-    parHash** temp=NULL;
+    int err=0;
+    int* tempInt=NULL;
+    parHash** tempPar=NULL;
     size_t novaCapacidade=2*h->capacidade;
-    temp=realloc(h->pares, novaCapacidade);
-    if(temp) {
-        h->pares=temp;
+    tempPar=realloc(h->pares, novaCapacidade);
+    if(!tempPar)
+        err=1;
+    if(!err) {
+        tempInt=realloc(h->chaves, novaCapacidade);
+        if(!tempInt)
+            err=1;
+    }
+    if(err) {
+        if(tempPar)
+            h->pares=realloc(tempPar, h->capacidade);
+        if(tempInt)
+            h->chaves=realloc(tempInt, h->capacidade);
+    } else {
+        h->pares=tempPar;
+        h->chaves=tempInt;
         h->capacidade=novaCapacidade;
     }
-    return temp ? 0 : 1;
+    return err;
 }
 
 float fatorCarregamento(hash* h) {
@@ -91,7 +119,10 @@ void* defineHash(hash* h, int chave, void* valor) {
     else if(h->pares[key]) {
         val=h->pares[key]->valor;
         h->pares[key]->valor=valor;
-        h->pares[key]->chave=chave;
+        if(h->pares[key]->chave!=chave) {
+            h->pares[key]->chave=chave;
+            // IMPLEMENTAR UMA AVL PARA MELHOR OTIMIZAÇÃO NA HORA DE INSERIR/REMOVER CHAVES
+        }
     } else {
         h->pares[key]=novoParHash(chave, valor);
         h->tamanho++;
@@ -143,14 +174,14 @@ int funcHash2(int chave) {
 }
 
 int colisaoLinear(hash* h, int chave, int offset) {
-    if(!h||!h->capacidade)
+    if(!h||h->capacidade==0)
         return -1;
-    int i=0, k, key=mod(h->funcHash(chave), h->capacidade), chaveHash=h->funcHash(chave), chaveHashAtual, step;
+    int i=0, k=-1, key=mod(h->funcHash(chave), h->capacidade), chaveHash=h->funcHash(chave), chaveHashAtual=-1, step=offset<0 ? -1 : 1;
     do {
         k=(key+i)%h->capacidade;
         i++;
     } while(h->pares[k]&&h->pares[k]->chave!=chave&&(chaveHashAtual=h->funcHash(h->pares[k]->chave))==chaveHash);
-    for(step=offset<0 ? -1 : 1;offset!=0&&(!h->pares[k]||h->funcHash(h->pares[k]->chave)==chaveHashAtual);i+=step,offset-=step)
+    for(;offset!=0&&(!h->pares[k]||h->funcHash(h->pares[k]->chave)==chaveHashAtual);i+=step,offset-=step)
         k=(key+step*i)%h->capacidade;
     return k;
 }

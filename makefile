@@ -18,7 +18,7 @@ main_o := $(patsubst $(build_dir)%,$(obj_dir)%.o,$(main))
 all: $(main)
 
 teste: $(main)
-	valgrind --leak-check=full --show-leak-kinds=all $^
+	valgrind -s --track-origins=yes --leak-check=full --show-leak-kinds=all $^
 
 $(obj_dir) $(build_dir):
 	mkdir $@

@@ -14,6 +14,7 @@ typedef struct Hash {
     size_t tamanho;
     int (*funcHash)(int);
     int (*funcColisao)(struct Hash*, int, int);
+    int* chaves;
     parHash** pares;
 } hash;
 

@@ -9,12 +9,13 @@ typedef struct {
     size_t tamanho;
     size_t capacidade;
     int(*extraiPrioridade)(void*);
+    int(*funcPrioridade)(int,int);
 } heap;
 
-heap* novoHeap(size_t tamanhoInicial, int(*extraiPrioridade)(void*));
+heap* novoHeap(size_t capacidadeInicial, int(*extraiPrioridade)(void*), int(*funcPrioridade)(int,int));
 int expandeHeap(heap* h);
 int insereHeap(heap* h, void* val);
-void* removeMaximo(heap* h);
+void* removePrioritario(heap* h);
 int heapifica(heap* h, int raiz);
 
 #endif

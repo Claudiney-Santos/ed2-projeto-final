@@ -1,12 +1,13 @@
 #include "heap.h"
 
-heap* novoHeap(size_t capacidadeInicial, int(*extraiPrioridade)(void*)) {
-    if(!extraiPrioridade)
+heap* novoHeap(size_t capacidadeInicial, int(*extraiPrioridade)(void*), int(*funcPrioridade)(int,int)) {
+    if(!extraiPrioridade||funcPrioridade)
         return NULL;
     heap* h=(heap*)malloc(sizeof(heap));
     if(h) {
         h->capacidade=capacidadeInicial;
         h->extraiPrioridade=extraiPrioridade;
+        h->funcPrioridade=funcPrioridade;
         h->prox=h->tamanho=0;
         h->vet=(void**)malloc(capacidadeInicial*sizeof(void*));
     }
@@ -38,7 +39,7 @@ int insereHeap(heap* h, void* val) {
     }
     return err;
 }
-void* removeMaximo(heap* h) {
+void* removePrioritario(heap* h) {
     if(!h||!h->tamanho)
         return NULL;
     void* val=h->vet[0];
@@ -51,23 +52,23 @@ void* removeMaximo(heap* h) {
 int heapifica(heap* h, int raiz) {
     if(!h)
         return -1;
-    int pai=raiz, esq=2*raiz+1, dir=2*raiz+2, maior;
-    int prior, priorEsq, priorDir, maiorPrior;
+    int pai=raiz, esq=2*raiz+1, dir=2*raiz+2, priorFilho;
+    int priorPai, priorEsq, priorDir, priorFilhoPrior;
     void* temp=NULL;
     if(pai>=h->prox||esq>=h->prox)
         return 0;
-    prior=h->extraiPrioridade(h->vet[raiz]), priorEsq=h->extraiPrioridade(h->vet[esq]), priorDir=dir<h->prox ? h->extraiPrioridade(h->vet[dir]) : -1;
-    if(priorEsq>priorDir) {
-        maior=esq;
-        maiorPrior=priorEsq;
+    priorPai=h->extraiPrioridade(h->vet[pai]), priorEsq=h->extraiPrioridade(h->vet[esq]), priorDir=dir<h->prox ? h->extraiPrioridade(h->vet[dir]) : -1;
+    if(dir<h->prox&&h->funcPrioridade(priorEsq, priorDir)==priorDir) {
+        priorFilho=dir;
+        priorFilhoPrior=priorDir;
     } else {
-        maior=dir;
-        maiorPrior=priorDir;
+        priorFilho=esq;
+        priorFilhoPrior=priorEsq;
     }
-    if(prior<maiorPrior) {
+    if(h->funcPrioridade(priorPai, priorFilhoPrior)!=priorPai) {
         temp=h->vet[pai];
-        h->vet[pai]=h->vet[maior];
-        h->vet[maior]=temp;
+        h->vet[pai]=h->vet[priorFilho];
+        h->vet[priorFilho]=temp;
     }
     heapifica(h, esq);
     heapifica(h, dir);

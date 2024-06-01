@@ -102,7 +102,7 @@ int heapifica(heap* h, int raiz) {
 //    if(!vet)
 //        return NULL;
 //    memcpy(vet, h->vet, h->tamanho*sizeof(void*));
-//    mergeSort(vet, h->funcPrioridade);
+//    mergesort(vet, h->funcPrioridade);
 //    return vet;
 //}
 

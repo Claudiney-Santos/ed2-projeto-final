@@ -79,8 +79,11 @@ float fatorCarregamento(hash* h) {
 void* defineHash(hash* h, int chave, void* valor) {
     if(!h)
         return NULL;
-    while(fatorCarregamento(h)>0.6)
-        expandeHash(h);
+    int err=0;
+    while(!err&&fatorCarregamento(h)>0.6)
+        err=expandeHash(h);
+    if(err)
+        return NULL;
     int key=h->funcColisao(h, chave, 0);
     void* val=NULL;
     if(key<0||key>=h->capacidade)

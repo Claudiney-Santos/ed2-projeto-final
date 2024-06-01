@@ -38,5 +38,7 @@ void liberaAvl(avl** a);
 void liberaAvlFunc(avl** a, void(*f)(void*));
 
 int insereAvl(avl* a, void* val);
+void* pegaAvl(avl* a, int chave);
+void* removeAvl(avl* a, int chave);
 
 #endif

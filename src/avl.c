@@ -166,3 +166,11 @@ int insereAvl(avl* a, void* val) {
     return a ? insereNoAvl(&a->raiz, val, a->extraiChave) : -1;
 }
 
+void* pegaAvl(avl* a, int chave) {
+    return a ? pegaNoAvl(a->raiz, chave, a->extraiChave) : NULL;
+}
+
+void* removeAvl(avl* a, int chave) {
+    return a ? removeNoAvl(&a->raiz, chave, a->extraiChave) : NULL;
+}
+

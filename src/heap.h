@@ -5,14 +5,16 @@
 
 typedef struct {
     void** vet;
-    int raiz;
+    int prox;
     size_t tamanho;
+    size_t capacidade;
     int(*extraiPrioridade)(void*);
 } heap;
 
-heap novoHeap(size_t tamanhoInicial, int(*extraiPrioridade)(void*));
+heap* novoHeap(size_t tamanhoInicial, int(*extraiPrioridade)(void*));
+int expandeHeap(heap* h);
 int insereHeap(heap* h, void* val);
 void* removeMaximo(heap* h);
-int heapifica(heap* h);
+int heapifica(heap* h, int raiz);
 
 #endif

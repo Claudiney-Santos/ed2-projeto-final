@@ -5,7 +5,6 @@
 
 typedef struct {
     void** vet;
-    int prox;
     size_t tamanho;
     size_t capacidade;
     int(*extraiPrioridade)(void*);
@@ -15,7 +14,9 @@ typedef struct {
 heap* novoHeap(size_t capacidadeInicial, int(*extraiPrioridade)(void*), int(*funcPrioridade)(int,int));
 int expandeHeap(heap* h);
 int insereHeap(heap* h, void* val);
+void* buscaHeap(heap* h, int(*ehProcurado)(void*));
 void* removePrioritario(heap* h);
 int heapifica(heap* h, int raiz);
+//void** heapOrganizado(heap* h);
 
 #endif

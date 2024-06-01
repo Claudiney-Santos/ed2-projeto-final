@@ -23,7 +23,7 @@ void* liberaParHash(parHash** ph) {
     return valor;
 }
 
-hash* novoHash(size_t capacidade, int (*funcHash)(int), int (*funcColisao)(hash*, int)) {
+hash* novoHash(size_t capacidade, int (*funcHash)(int), int (*funcColisao)(hash*, int, int)) {
     if(!funcHash||!funcColisao)
         return NULL;
     hash* h=(hash*)malloc(sizeof(hash));
@@ -81,7 +81,7 @@ void* defineHash(hash* h, int chave, void* valor) {
         return NULL;
     while(fatorCarregamento(h)>0.6)
         expandeHash(h);
-    int key=h->funcColisao(h, chave);
+    int key=h->funcColisao(h, chave, 0);
     void* val=NULL;
     if(key<0||key>=h->capacidade)
         return NULL;
@@ -97,22 +97,38 @@ void* defineHash(hash* h, int chave, void* valor) {
 }
 
 void* pegaHash(hash* h, int chave) {
-    if(!h)
+    if(!h||!h->capacidade)
         return NULL;
-    int key=h->funcColisao(h, chave);
+    int key=h->funcColisao(h, chave, 0);
     if(key<0||key>=h->capacidade||!h->pares[key]||h->pares[key]->chave!=chave)
         return NULL;
     return h->pares[key]->valor;
 }
 
 void* removeHash(hash* h, int chave) {
-    if(!h)
+    if(!h||!h->capacidade)
         return NULL;
-    int key=h->funcColisao(h, chave);
+    int key=h->funcColisao(h, chave, 0), i, knext, chaveHash;
+    parHash** p=NULL;
+    parHash temp;
     if(key<0||key>=h->capacidade||!h->pares[key]||h->pares[key]->chave!=chave)
         return NULL;
+    chaveHash=h->funcHash(chave);
+    i=0;
+    do
+        knext=h->funcColisao(h, chave, ++i);
+    while(knext>=0&&knext<h->capacidade&&h->pares[knext]&&knext!=key&&h->funcHash(h->pares[knext]->chave)==chaveHash);
+
+    p=&h->pares[h->funcColisao(h, chave, --i)];
+    temp.chave=h->pares[key]->chave;
+    temp.valor=h->pares[key]->valor;
+    h->pares[key]->chave=(*p)->chave;
+    h->pares[key]->valor=(*p)->valor;
+    (*p)->chave=temp.chave;
+    (*p)->valor=temp.valor;
+
     h->tamanho--;
-    return liberaParHash(&h->pares[key]);
+    return liberaParHash(p);
 }
 
 int funcHash1(int chave) {
@@ -123,25 +139,29 @@ int funcHash2(int chave) {
     return chave;
 }
 
-int colisaoLinear(hash* h, int chave) {
+int colisaoLinear(hash* h, int chave, int offset) {
     if(!h||!h->capacidade)
         return -1;
-    int i=0, k, key=mod(h->funcHash(chave), h->capacidade);
+    int i=0, k, key=mod(h->funcHash(chave), h->capacidade), chaveHash=h->funcHash(chave), chaveHashAtual, step;
     do {
         k=(key+i)%h->capacidade;
         i++;
-    } while(h->pares[k]&&h->pares[k]->chave!=chave);
+    } while(h->pares[k]&&h->pares[k]->chave!=chave&&(chaveHashAtual=h->funcHash(h->pares[k]->chave))==chaveHash);
+    for(step=offset<0 ? -1 : 1;offset!=0&&(!h->pares[k]||h->funcHash(h->pares[k]->chave)==chaveHashAtual);i+=step,offset-=step)
+        k=(key+step*i)%h->capacidade;
     return k;
 }
 
-int colisaoQuadratica(hash* h, int chave) {
+int colisaoQuadratica(hash* h, int chave, int offset) {
     if(!h||!h->capacidade)
         return -1;
-    int i=0, k, key=mod(h->funcHash(chave), h->capacidade);
+    int i=0, k, key=mod(h->funcHash(chave), h->capacidade), chaveHash=h->funcHash(chave), chaveHashAtual, step;
     do {
         k=(key+i*i)%h->capacidade;
         i++;
-    } while(h->pares[k]&&h->pares[k]->chave!=chave);
+    } while(h->pares[k]&&h->pares[k]->chave!=chave&&(chaveHashAtual=h->funcHash(h->pares[k]->chave))==chaveHash);
+    for(step=offset<0 ? -1 : 1;offset!=0&&(!h->pares[k]||h->funcHash(h->pares[k]->chave)==chaveHashAtual);i+=step,offset-=step)
+        k=(key+step*i*i)%h->capacidade;
     return k;
 }
 

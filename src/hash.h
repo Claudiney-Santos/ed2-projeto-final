@@ -13,14 +13,14 @@ typedef struct Hash {
     size_t capacidade;
     size_t tamanho;
     int (*funcHash)(int);
-    int (*funcColisao)(struct Hash*, int);
+    int (*funcColisao)(struct Hash*, int, int);
     parHash** pares;
 } hash;
 
 parHash* novoParHash(int chave, void* valor);
 void* liberaParHash(parHash** ph);
 
-hash* novoHash(size_t capacidade, int (*funcHash)(int), int (*funcColisao)(hash*, int));
+hash* novoHash(size_t capacidade, int (*funcHash)(int), int (*funcColisao)(hash*, int, int));
 void liberaHash(hash** h);
 void liberaHashFunc(hash** h, void(*f)(void*));
 
@@ -37,7 +37,7 @@ int funcHash1(int chave);
 int funcHash2(int chave);
 
 // funções de colisão
-int colisaoLinear(hash* h, int chave);
-int colisaoQuadratica(hash* h, int chave);
+int colisaoLinear(hash* h, int chave, int offset);
+int colisaoQuadratica(hash* h, int chave, int offset);
 
 #endif

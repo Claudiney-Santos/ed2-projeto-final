@@ -189,12 +189,12 @@ int colisaoLinear(hash* h, int chave, int offset) {
 int colisaoQuadratica(hash* h, int chave, int offset) {
     if(!h||!h->capacidade)
         return -1;
-    int i=0, k, key=mod(h->funcHash(chave), h->capacidade), chaveHash=h->funcHash(chave), chaveHashAtual, step;
+    int i=0, k, key=mod(h->funcHash(chave), h->capacidade), chaveHash=h->funcHash(chave), chaveHashAtual, step=offset<0 ? -1 : 1;
     do {
         k=(key+i*i)%h->capacidade;
         i++;
     } while(h->pares[k]&&h->pares[k]->chave!=chave&&(chaveHashAtual=h->funcHash(h->pares[k]->chave))==chaveHash);
-    for(step=offset<0 ? -1 : 1;offset!=0&&(!h->pares[k]||h->funcHash(h->pares[k]->chave)==chaveHashAtual);i+=step,offset-=step)
+    for(;offset!=0&&(!h->pares[k]||h->funcHash(h->pares[k]->chave)==chaveHashAtual);i+=step,offset-=step)
         k=(key+step*i*i)%h->capacidade;
     return k;
 }

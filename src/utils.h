@@ -11,4 +11,6 @@ char isAlphanumeric(char* str);
 
 int mod(int a, int b);
 
+int mergesort(void** vet, int first, int last, void*(*priorityFunc)(void*,void*));
+
 #endif

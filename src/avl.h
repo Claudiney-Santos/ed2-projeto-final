@@ -33,7 +33,7 @@ int calculaAlturaNo(noAvl* n);
 int pegaFbNo(noAvl* n);
 int calculaFbNo(noAvl* n);
 
-avl* novoAvl(int(*extraiChave)(void*));
+avl* novaAvl(int(*extraiChave)(void*));
 void liberaAvl(avl** a);
 void liberaAvlFunc(avl** a, void(*f)(void*));
 

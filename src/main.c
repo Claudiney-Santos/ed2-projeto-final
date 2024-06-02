@@ -4,8 +4,9 @@
 
 #include "utils.h"
 #include "lista.h"
+#include "processos.h"
 #include "parser.h"
-#include "hash.h"
+#include "simulacao.h"
 
 #define INPUT_TAMANHO 50
 
@@ -42,26 +43,13 @@ void liberaScript(script** s) {
 int mostraComandos(lista* l);
 int carregaScript(script* arquivo);
 
-void encerraProcessoLista(void* val) {
-    processo* p=(processo*)val;
-    encerraProcesso(&p);
-}
-
 int main(int argc, char** argv) {
     long int escolha=1;
-    int err=0, i;
+    int err=0;
     char rodar=1;
     char input[INPUT_TAMANHO];
     char* saida;
     script* arquivo=novoScript();
-    hash* h[4];
-    h[0]=novoHash(101, funcHash1, colisaoLinear);
-    h[1]=novoHash(101, funcHash1, colisaoQuadratica);
-    h[2]=novoHash(101, funcHash2, colisaoLinear);
-    h[3]=novoHash(101, funcHash2, colisaoQuadratica);
-
-    defineHash(h[0], 2134, (void*)&escolha);
-    printf("Escolha: %li\n", *(long int*)removeHash(h[0], 2134));
 
     while(rodar&&!err) {
         if(arquivo->l)
@@ -79,6 +67,7 @@ int main(int argc, char** argv) {
                 rodar=0;
                 break;
             case 1:
+                executarSimulacao(arquivo->l);
                 break;
             case 2:
                 err=mostraComandos(arquivo->l);
@@ -89,8 +78,6 @@ int main(int argc, char** argv) {
         }
         printf("\n===\n");
     }
-    for(i=0;i<4;i++)
-        liberaHashFunc(&h[i], encerraProcessoLista);
 
     liberaScript(&arquivo);
     return 0;
@@ -101,55 +88,68 @@ int mostraComandos(lista* l) {
         printf("Nao ha comandos salvos!\n");
         return 0;
     }
-    no* n=NULL;
     int i=0;
+    no* n=NULL;
+    char* status=NULL;
     for(n=l->raiz;n;n=n->prox, i++) {
         token* t=(token*)n->val;
-        if(i)
-            printf("===\n");
         printf("Comando %d: ", i);
         switch(t->cmd) {
             case iniciar:
-                printf("iniciar");
+                printf("Iniciar");
                 break;
             case encerrar:
-                printf("encerrar");
+                printf("Encerrar");
                 break;
             case inserirAvl:
-                printf("inserirAVL");
+                printf("InserirAVL %d %s %d ", t->params[0]->val.integer, t->params[1]->val.string, t->params[2]->val.integer);
+                status=statusParaString(t->params[3]->val.status);
+                if(status) {
+                    printf("%s", status);
+                    free(status);
+                    status=NULL;
+                } else
+                    printf("%d", t->params[3]->val.status);
                 break;
             case terminarAvl:
-                printf("terminarAVL");
+                printf("TerminarAVL %d", t->params[0]->val.integer);
                 break;
             case listarAvl:
-                printf("listarAVL");
+                printf("ListarAVL");
                 break;
             case alterarHeap:
-                printf("alterarHeap");
+                printf("AlterarHeap %d %d", t->params[0]->val.integer, t->params[0]->val.integer);
                 break;
             case removerHeap:
-                printf("removerHeap");
+                printf("RemoverHeap");
                 break;
             case listarHeap:
-                printf("listarHeap");
+                printf("ListarHeap");
                 break;
             case bloquearHash:
-                printf("bloquearHash");
+                printf("BloquearHash %d", t->params[0]->val.integer);
                 break;
             case desbloquearHash:
-                printf("desbloquearHash");
+                printf("DesbloquearHash %d", t->params[0]->val.integer);
                 break;
             case executar:
-                printf("executar");
+                printf("Executar %d", t->params[0]->val.integer);
                 break;
             case removerHash:
-                printf("removerHash");
+                printf("RemoverHash %d", t->params[0]->val.integer);
                 break;
             case listarHash:
-                printf("listarHash");
+                printf("ListarHash ");
+                status=statusParaString(t->params[0]->val.status);
+                if(status) {
+                    printf("%s", status);
+                    free(status);
+                    status=NULL;
+                } else
+                    printf("%d", t->params[0]->val.status);
                 break;
             case terminar:
-                printf("terminar");
+                printf("Terminar %d %s", t->params[0]->val.integer, t->params[1]->val.string);
                 break;
         }
         printf("\n");

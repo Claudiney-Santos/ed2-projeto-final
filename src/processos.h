@@ -20,4 +20,8 @@ int encerraProcesso(processo** p);
 int mudaPrioridade(processo* p, int novaPrioridade);
 int mudaStatus(processo* p, statusCodigo novoStatus);
 
+void mostraProcesso(processo* p);
+
+char* statusParaString(statusCodigo status);
+
 #endif

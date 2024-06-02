@@ -137,7 +137,7 @@ int calculaFbNo(noAvl* n) {
     return n->fb;
 }
 
-avl* novoAvl(int(*extraiChave)(void*)) {
+avl* novaAvl(int(*extraiChave)(void*)) {
     if(!extraiChave)
         return NULL;
     avl* a=(avl*)malloc(sizeof(avl));

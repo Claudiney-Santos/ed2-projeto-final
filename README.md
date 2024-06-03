@@ -32,10 +32,13 @@ make all
 
 ### Como instalar o `make`?
 Os seguintes comandos funcionam tanto em Linux nativo, quanto WSL
+
 Ubuntu/Debian:
     `sudo apt-get install make`
+    
 Fedora/RedHat/CentOS:
     `sudo dnf install make`
+    
 Fedora/RedHat/CentOS (legado):
     `sudo yum install make`
 

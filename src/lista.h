@@ -1,5 +1,6 @@
 #ifndef _LISTA_H_
-#define _LISTA_H_
+#define _LISTA_H_ 1
+
 #include <stdlib.h>
 
 typedef struct No {

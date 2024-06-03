@@ -1,5 +1,5 @@
 #ifndef _PARSER_H_
-#define _PARSER_H_
+#define _PARSER_H_ 1
 
 #define MAX_CHAR_LIDOS_POR_LINHA 80
 

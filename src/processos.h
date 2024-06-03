@@ -1,5 +1,5 @@
 #ifndef _PROCESSOS_H_
-#define _PROCESSOS_H_
+#define _PROCESSOS_H_ 1
 
 typedef enum {
     pronto,

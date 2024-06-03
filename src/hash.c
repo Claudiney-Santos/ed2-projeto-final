@@ -1,7 +1,8 @@
 #include "hash.h"
-#include <stdlib.h>
 
 #include "utils.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 #define PHI 161803398875
 
@@ -34,18 +35,17 @@ hash* novoHash(size_t capacidade, int (*funcHash)(int), int (*funcColisao)(hash*
         h->funcHash=funcHash;
         h->funcColisao=funcColisao;
         h->chaves=(int*)malloc(capacidade*sizeof(int));
-        if(!h->chaves)
+        h->pares=(parHash**)calloc(capacidade,sizeof(parHash*));
+        h->registro=novoLog("Hash");
+        if(!h->chaves||!h->pares||!h->registro)
             err=1;
-        if(!err) {
-            h->pares=(parHash**)calloc(capacidade,sizeof(parHash*));
-            if(!h->pares)
-                err=1;
-        }
         if(err) {
             if(h->chaves)
                 free(h->chaves);
             if(h->pares)
                 free(h->pares);
+            if(h->registro)
+                liberaLog(&h->registro);
             free(h);
             h=NULL;
         }
@@ -69,6 +69,8 @@ void liberaHashFunc(hash** h, void(*f)(void*)) {
     for(i=0;i<(*h)->tamanho;i++)
         (*f)(removeHash(*h, (*h)->chaves[i]));
 
+    if((*h)->registro)
+        liberaLog(&(*h)->registro);
     free((*h)->pares);
     free((*h)->chaves);
     free(*h);
@@ -79,27 +81,32 @@ int expandeHash(hash* h) {
     if(!h)
         return -1;
     int err=0;
+    size_t novaCapacidade=2*h->capacidade;
     int* tempInt=NULL;
     parHash** tempPar=NULL;
-    size_t novaCapacidade=2*h->capacidade;
+    char* msg=(char*)malloc(256*sizeof(char));
+    if(!msg)
+        return 2;
+
     tempPar=realloc(h->pares, novaCapacidade);
-    if(!tempPar)
+    tempInt=realloc(h->chaves, novaCapacidade);
+    if(!tempPar||!tempInt)
         err=1;
-    if(!err) {
-        tempInt=realloc(h->chaves, novaCapacidade);
-        if(!tempInt)
-            err=1;
-    }
     if(err) {
+        sprintf(msg, "Foi tentado aumentar a capacidade do hash de %lu para %lu, porem houve uma falha", h->capacidade, novaCapacidade);
+        adicionaLog(h->registro, msg);
         if(tempPar)
             h->pares=realloc(tempPar, h->capacidade);
         if(tempInt)
             h->chaves=realloc(tempInt, h->capacidade);
     } else {
+        sprintf(msg, "A capacidade do hash foi aumentada de %lu para %lu", h->capacidade, novaCapacidade);
+        adicionaLog(h->registro, msg);
         h->pares=tempPar;
         h->chaves=tempInt;
         h->capacidade=novaCapacidade;
     }
+    free(msg);
     return err;
 }
 
@@ -110,31 +117,53 @@ float fatorCarregamento(hash* h) {
 void* defineHash(hash* h, int chave, void* valor) {
     if(!h)
         return NULL;
-    int err=0;
+    int err=0, key, i, keyOriginal=h->funcHash(chave);
+    void* val=NULL;
+    char* msg=(char*)malloc(256*sizeof(char));
+    if(!msg)
+        return NULL;
+
     while(!err&&fatorCarregamento(h)>0.6)
         err=expandeHash(h);
-    if(err)
+    if(err) {
+        free(msg);
         return NULL;
-    int key=h->funcColisao(h, chave, 0), i;
-    void* val=NULL;
-    if(key<0||key>=h->capacidade)
+    }
+
+    key=h->funcColisao(h, chave, 0);
+    if(key!=keyOriginal) {
+            sprintf(msg, "Houve uma colisao ao tentar definir a chave %d para a posicao %d, sua nova possivel posicao eh %d", chave, keyOriginal, key);
+            adicionaLog(h->registro, msg);
+    }
+    if(key<0||key>=h->capacidade) {
+        sprintf(msg, "Ao tentar definir a chave %d, os algoritmos de hash e/ou colisao resultaram na chave invalida %d", chave, key);
+        adicionaLog(h->registro, msg);
+        free(msg);
         return NULL;
-    else if(h->pares[key]) {
+    } else if(h->pares[key]) {
         val=h->pares[key]->valor;
         h->pares[key]->valor=valor;
         if(h->pares[key]->chave!=chave) {
+            sprintf(msg, "A chave %d foi definida na posicao %d, sobreescrevendo a chave %d, que havia sido anteriormente definida", chave, key, h->pares[key]->chave);
+            adicionaLog(h->registro, msg);
             for(i=0;i<h->tamanho;i++)
                 if(h->chaves[i]==h->pares[key]->chave) {
                     h->chaves[i]=chave;
                     break;
                 }
             h->pares[key]->chave=chave;
+        } else {
+            sprintf(msg, "A chave %d foi definida na posicao %d, sobreescrevendo o valor que estava anteriormente definido", chave, key);
+            adicionaLog(h->registro, msg);
         }
     } else {
+        sprintf(msg, "A chave %d foi definida na posicao %d", chave, key);
+        adicionaLog(h->registro, msg);
         h->pares[key]=novoParHash(chave, valor);
         h->chaves[h->tamanho]=chave;
         h->tamanho++;
     }
+    free(msg);
     return val;
 }
 
@@ -142,8 +171,18 @@ void* pegaHash(hash* h, int chave) {
     if(!h||!h->capacidade)
         return NULL;
     int key=h->funcColisao(h, chave, 0);
-    if(key<0||key>=h->capacidade||!h->pares[key]||h->pares[key]->chave!=chave)
+    char* msg=(char*)malloc(256*sizeof(char));
+    if(!msg)
         return NULL;
+    if(key<0||key>=h->capacidade||!h->pares[key]||h->pares[key]->chave!=chave) {
+        sprintf(msg, "Houve uma falha ao tentar acessar a chave %d do hash", chave);
+        adicionaLog(h->registro, msg);
+        free(msg);
+        return NULL;
+    }
+    sprintf(msg, "A chave %d foi acessada com sucesso", chave);
+    adicionaLog(h->registro, msg);
+    free(msg);
     return h->pares[key]->valor;
 }
 
@@ -151,10 +190,17 @@ void* removeHash(hash* h, int chave) {
     if(!h||!h->capacidade)
         return NULL;
     int key=h->funcColisao(h, chave, 0), i, knext, chaveHash;
-    parHash** p=NULL;
     parHash temp;
-    if(key<0||key>=h->capacidade||!h->pares[key]||h->pares[key]->chave!=chave)
+    parHash** p=NULL;
+    char* msg=(char*)malloc(256*sizeof(char));
+    if(!msg)
         return NULL;
+    if(key<0||key>=h->capacidade||!h->pares[key]||h->pares[key]->chave!=chave) {
+        sprintf(msg, "Houve uma falha ao tentar remover a chave %d do hash", chave);
+        adicionaLog(h->registro, msg);
+        free(msg);
+        return NULL;
+    }
     chaveHash=h->funcHash(chave);
     i=0;
     do
@@ -168,6 +214,13 @@ void* removeHash(hash* h, int chave) {
     h->pares[key]->valor=(*p)->valor;
     (*p)->chave=temp.chave;
     (*p)->valor=temp.valor;
+
+    if(i)
+        sprintf(msg, "A chave %d foi removida com sucesso da posicao %d, e a chave %d foi realocada para essa posicao", chave, key, h->pares[key]->chave);
+    else 
+        sprintf(msg, "A chave %d foi removida com sucesso da posicao %d", chave, key);
+    adicionaLog(h->registro, msg);
+    free(msg);
 
     for(i=0;i<h->tamanho;i++)
         if(h->chaves[i]==chave) {
@@ -202,7 +255,7 @@ int colisaoLinear(hash* h, int chave, int offset) {
 int colisaoQuadratica(hash* h, int chave, int offset) {
     if(!h||!h->capacidade)
         return -1;
-    int i=0, k, key=mod(h->funcHash(chave), h->capacidade), chaveHash=h->funcHash(chave), chaveHashAtual, step=offset<0 ? -1 : 1;
+    int i=0, k, key=mod(h->funcHash(chave), h->capacidade), chaveHash=h->funcHash(chave), chaveHashAtual=-1, step=offset<0 ? -1 : 1;
     do {
         k=(key+i*i)%h->capacidade;
         i++;

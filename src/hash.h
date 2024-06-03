@@ -1,5 +1,7 @@
 #ifndef _HASH_H_
-#define _HASH_H_
+#define _HASH_H_ 1
+
+#include "log.h"
 
 #include <stdlib.h>
 
@@ -15,6 +17,7 @@ typedef struct Hash {
     int (*funcColisao)(struct Hash*, int, int);
     int* chaves;
     parHash** pares;
+    log* registro;
 } hash;
 
 parHash* novoParHash(int chave, void* valor);

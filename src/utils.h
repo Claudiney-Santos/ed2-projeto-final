@@ -1,5 +1,5 @@
 #ifndef _UTILS_H_
-#define _UTILS_H_
+#define _UTILS_H_ 1
 
 void upperString(char* str);
 void lowerString(char* str);

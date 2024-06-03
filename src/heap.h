@@ -1,5 +1,7 @@
 #ifndef _HEAP_H_
-#define _HEAP_H_
+#define _HEAP_H_ 1
+
+#include "log.h"
 
 #include <stdlib.h>
 
@@ -8,6 +10,7 @@ typedef struct {
     size_t tamanho;
     size_t capacidade;
     void*(*funcPrioridade)(void*,void*);
+    log* registro;
 } heap;
 
 heap* novoHeap(size_t capacidadeInicial, void*(*funcPrioridade)(void*,void*));

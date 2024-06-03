@@ -25,8 +25,10 @@ processo* novoProcesso(int codigo, char* nome, int prioridade, statusCodigo stat
 int encerraProcesso(processo** p) {
     if(!p||!(*p))
         return 1;
-    if((*p)->nome)
+    if((*p)->nome) {
         free((*p)->nome);
+        (*p)->nome=NULL;
+    }
     free(*p);
     *p=NULL;
     return 0;
@@ -50,23 +52,22 @@ void mostraProcesso(processo* p) {
     if(!p)
         return;
     char* status=statusParaString(p->status);
-    printf("Codigo: %d\nNome: %s\nPrioridade: %d\nStatus: %s", p->codigo, p->nome, p->prioridade, status);
+    printf("Codigo: %d\nNome: %s\nPrioridade: %d\nStatus: %s\n", p->codigo, p->nome, p->prioridade, status);
     free(status);
 }
 
 char* statusParaString(statusCodigo status) {
-    char* str=NULL;
+    char* str=(char*)malloc(20*sizeof(char));
+    if(!str)
+        return NULL;
     switch(status) {
         case pronto:
-            str=(char*)malloc(7*sizeof(char));
             strcpy(str, "PRONTO");
             break;
         case execucao:
-            str=(char*)malloc(9*sizeof(char));
             strcpy(str, "EXECUCAO");
             break;
         case bloqueado:
-            str=(char*)malloc(10*sizeof(char));
             strcpy(str, "BLOQUEADO");
             break;
     }

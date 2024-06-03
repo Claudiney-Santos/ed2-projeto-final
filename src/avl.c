@@ -1,4 +1,5 @@
 #include "avl.h"
+#include <stdio.h>
 
 noAvl* novoNoAvl(void* val) {
     noAvl* n=(noAvl*)malloc(sizeof(noAvl));
@@ -140,10 +141,20 @@ int calculaFbNo(noAvl* n) {
 avl* novaAvl(int(*extraiChave)(void*)) {
     if(!extraiChave)
         return NULL;
+    int err=0;
     avl* a=(avl*)malloc(sizeof(avl));
     if(a) {
-        a->extraiChave=extraiChave;
         a->raiz=NULL;
+        a->extraiChave=extraiChave;
+        a->registro=novoLog("AVL");
+        if(!a->registro)
+            err=1;
+        if(err) {
+            if(a->registro)
+                liberaLog(&a->registro);
+            free(a);
+            a=NULL;
+        }
     }
     return a;
 }
@@ -158,19 +169,58 @@ void liberaAvlFunc(avl** a, void(*f)(void*)) {
 
     liberaNosAvlFunc(&(*a)->raiz, f);
 
+    if((*a)->registro)
+        liberaLog(&(*a)->registro);
+
     free(*a);
     *a=NULL;
 }
 
 int insereAvl(avl* a, void* val) {
-    return a ? insereNoAvl(&a->raiz, val, a->extraiChave) : -1;
+    if(!a)
+        return -1;
+    int err=insereNoAvl(&a->raiz, val, a->extraiChave);
+    char* msg=(char*)malloc(256*sizeof(char));
+    if(!msg)
+        return 1;
+    if(err)
+        sprintf(msg, "Nao foi possivel adicionar o elemento com chave %d a AVL", a->extraiChave(val));
+    else
+        sprintf(msg, "O elemento com chave %d foi adicionado com sucesso a AVL", a->extraiChave(val));
+    adicionaLog(a->registro, msg);
+    free(msg);
+    return err;
 }
 
 void* pegaAvl(avl* a, int chave) {
-    return a ? pegaNoAvl(a->raiz, chave, a->extraiChave) : NULL;
+    if(!a)
+        return NULL;
+    void* val=pegaNoAvl(a->raiz, chave, a->extraiChave);
+    char* msg=(char*)malloc(256*sizeof(char));
+    if(!msg)
+        return NULL;
+    if(val)
+        sprintf(msg, "O elemento com chave %d foi recuperado com sucesso", chave);
+    else
+        sprintf(msg, "Houve uma falha ao tentar recuperar o elemento com chave %d", chave);
+    adicionaLog(a->registro, msg);
+    free(msg);
+    return val;
 }
 
 void* removeAvl(avl* a, int chave) {
-    return a ? removeNoAvl(&a->raiz, chave, a->extraiChave) : NULL;
+    if(!a)
+        return NULL;
+    void* val=removeNoAvl(&a->raiz, chave, a->extraiChave);
+    char* msg=(char*)malloc(256*sizeof(char));
+    if(msg) {
+        if(val)
+            sprintf(msg, "A chave %d foi removida com sucesso da AVL", chave);
+        else
+            sprintf(msg, "Houve uma falha ao tentar remover a chave %d da AVL", chave);
+        adicionaLog(a->registro, msg);
+        free(msg);
+    }
+    return val;
 }
 

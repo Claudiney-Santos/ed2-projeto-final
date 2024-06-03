@@ -1,5 +1,7 @@
 #ifndef _AVL_H_
-#define _AVL_H_
+#define _AVL_H_ 1
+
+#include "log.h"
 
 #include <stdlib.h>
 
@@ -14,6 +16,7 @@ typedef struct NoAvl {
 typedef struct {
     noAvl* raiz;
     int (*extraiChave)(void*);
+    log* registro;
 } avl;
 
 noAvl* novoNoAvl(void* val);

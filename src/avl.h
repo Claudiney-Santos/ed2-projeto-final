@@ -31,7 +31,7 @@ void rotacaoEsquerda(noAvl** n);
 void rotacaoDireita(noAvl** n);
 
 int pegaAlturaNo(noAvl* n);
-int calculaAlturaNo(noAvl* n);
+int calculaAlturaNo(noAvl** n);
 
 int pegaFbNo(noAvl* n);
 int calculaFbNo(noAvl* n);

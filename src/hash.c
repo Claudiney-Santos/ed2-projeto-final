@@ -190,7 +190,7 @@ void* pegaHash(hash* h, int chave) {
 void* removeHash(hash* h, int chave) {
     if(!h||!h->capacidade)
         return NULL;
-    int key=h->funcColisao(h, chave, 0), i, knext, chaveHash;
+    int key=h->funcColisao(h, chave, 0), i=0, knext=-1, chaveHash=-1;
     parHash temp;
     parHash** p=NULL;
     char* msg=(char*)malloc(256*sizeof(char));

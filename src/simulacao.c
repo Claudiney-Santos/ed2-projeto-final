@@ -47,6 +47,7 @@ int executarSimulacao(lista* tokens) {
     heap* he=novoHeap(capacidadeInicial, funcPrioridadeHeap);
 
     processo* p=NULL;
+    processo* q=NULL;
 
     ha[0]=novoHash(capacidadeInicial, funcHash1, colisaoLinear);
     ha[1]=novoHash(capacidadeInicial, funcHash1, colisaoQuadratica);
@@ -94,8 +95,10 @@ int executarSimulacao(lista* tokens) {
                 for(i=0;i<4;i++) {
                     p=novoProcesso(t->params[0]->val.integer, t->params[1]->val.string, t->params[2]->val.integer, t->params[3]->val.status);
                     calculaTempo(&tempo);
-                    defineHash(ha[i], p->codigo, (void*)p);
+                    q=defineHash(ha[i], p->codigo, (void*)p);
                     delta=calculaTempo(&tempo);
+                    if(q)
+                        encerraProcesso(&q);
                     if(msg) {
                         sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
                         adicionaLog(ha[i]->registro, msg);
@@ -178,27 +181,27 @@ int executarSimulacao(lista* tokens) {
                 }
                 encerraProcesso(&p);
 
-                if(p) {
-                    calculaTempo(&tempo);
-                    p=removeAvl(a,p->codigo);
-                    delta=calculaTempo(&tempo);
-                    if(msg) {
-                        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
-                        adicionaLog(a->registro, msg);
-                    }
-                    encerraProcesso(&p);
+                //if(p) {
+                //    calculaTempo(&tempo);
+                //    p=removeAvl(a,p->codigo);
+                //    delta=calculaTempo(&tempo);
+                //    if(msg) {
+                //        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+                //        adicionaLog(a->registro, msg);
+                //    }
+                //    encerraProcesso(&p);
 
-                    for(i=0;i<4;i++) {
-                        calculaTempo(&tempo);
-                        p=removeHash(ha[i],p->codigo);
-                        delta=calculaTempo(&tempo);
-                        if(msg) {
-                            sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
-                            adicionaLog(ha[i]->registro, msg);
-                        }
-                        encerraProcesso(&p);
-                    }
-                }
+                //    for(i=0;i<4;i++) {
+                //        calculaTempo(&tempo);
+                //        p=removeHash(ha[i],p->codigo);
+                //        delta=calculaTempo(&tempo);
+                //        if(msg) {
+                //            sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+                //            adicionaLog(ha[i]->registro, msg);
+                //        }
+                //        encerraProcesso(&p);
+                //    }
+                //}
 
                 p=NULL;
                 break;
@@ -281,7 +284,27 @@ int executarSimulacao(lista* tokens) {
                 }
                 break;
             case terminarAvl:
+                calculaTempo(&tempo);
+                p=removeAvl(a,t->params[0]->val.integer);
+                delta=calculaTempo(&tempo);
+                if(msg) {
+                    sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+                    adicionaLog(a->registro, msg);
+                }
+                encerraProcesso(&p);
+                break;
             case removerHash:
+                for(i=0;i<4;i++) {
+                    calculaTempo(&tempo);
+                    p=removeHash(ha[i],t->params[0]->val.integer);
+                    delta=calculaTempo(&tempo);
+                    if(msg) {
+                        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+                        adicionaLog(ha[i]->registro, msg);
+                    }
+                    encerraProcesso(&p);
+                }
+                break;
             case terminar:
                 k=(int*)malloc(sizeof(int));
                 if(!k) {
@@ -302,7 +325,7 @@ int executarSimulacao(lista* tokens) {
                 encerraProcesso(&p);
 
                 calculaTempo(&tempo);
-                removeAvl(a,t->params[0]->val.integer);
+                p=removeAvl(a,t->params[0]->val.integer);
                 delta=calculaTempo(&tempo);
                 if(msg) {
                     sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
@@ -312,22 +335,26 @@ int executarSimulacao(lista* tokens) {
 
                 for(i=0;i<4;i++) {
                     calculaTempo(&tempo);
-                    removeHash(ha[i],t->params[0]->val.integer);
+                    p=removeHash(ha[i],t->params[0]->val.integer);
                     delta=calculaTempo(&tempo);
                     if(msg) {
                         sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
                         adicionaLog(ha[i]->registro, msg);
                     }
+                    encerraProcesso(&p);
                 }
-                encerraProcesso(&p);
                 break;
         }
     }
 
     salvarLogEmArquivo(a->registro);
-    salvarLogEmArquivo(he->registro);
-    for(i=0;i<4;i++)
+    printf("Os arquivos \"%s.log\"", a->registro->nome);
+    for(i=0;i<4;i++) {
         salvarLogEmArquivo(ha[i]->registro);
+        printf(", \"%s.log\"", ha[i]->registro->nome);
+    }
+    salvarLogEmArquivo(he->registro);
+    printf(" e \"%s.log\" foram salvos!\n", he->registro->nome);
 
     if(msg)
         free(msg);

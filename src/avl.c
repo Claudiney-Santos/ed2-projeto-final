@@ -48,11 +48,38 @@ int insereNoAvl(noAvl** n, void* val, int(*extraiChave)(void*)) {
     return 0;
 }
 
+void* removeMenorFilho(noAvl** n) {
+    if(!n||!*n)
+        return NULL;
+    noAvl* m=NULL;
+    if((*n)->esq)
+        m=removeMenorFilho(&(*n)->esq);
+    else {
+        m=*n;
+        *n=m->dir;
+        m->dir=NULL;
+    }
+    return m;
+}
+
+void* removeMaiorFilho(noAvl** n) {
+    if(!n||!*n)
+        return NULL;
+    noAvl* m=NULL;
+    if((*n)->dir)
+        m=removeMenorFilho(&(*n)->dir);
+    else {
+        m=*n;
+        *n=m->esq;
+        m->esq=NULL;
+    }
+    return m;
+}
 
 void* pegaNoAvl(noAvl* n, int chave, int(*extraiChave)(void*)) {
     if(!n||extraiChave)
         return NULL;
-    int chaveAtual=extraiChave(n);
+    int chaveAtual=extraiChave(n->val);
     noAvl* m=NULL;
     if(chaveAtual==chave)
         return n->val;
@@ -61,13 +88,28 @@ void* pegaNoAvl(noAvl* n, int chave, int(*extraiChave)(void*)) {
 }
 
 void* removeNoAvl(noAvl** n, int chave, int(*extraiChave)(void*)) {
-    if(!n||!(*n)||extraiChave)
+    if(!n||!(*n)||!extraiChave)
         return NULL;
-    int chaveAtual=extraiChave(*n), alturaEsq=-1, alturaDir=-1;
+
+    int chaveAtual=extraiChave((*n)->val), alturaEsq=-1, alturaDir=-1;
     noAvl** m=NULL;
+    noAvl* o=NULL;
     void* val=NULL;
-    if(chaveAtual==chave)
-        return liberaNoAvl(n);
+    if(chaveAtual==chave) {
+        o=(*n)->esq ? removeMaiorFilho(&(*n)->esq) : removeMenorFilho(&(*n)->dir);
+        if(o) {
+            o->dir=(*n)->dir;
+            o->esq=(*n)->esq;
+        }
+        val=liberaNoAvl(n);
+        *n=o;
+        if(o) {
+            alturaEsq=calculaAlturaNo(&(*n)->esq);
+            alturaDir=calculaAlturaNo(&(*n)->dir);
+            (*n)->altura=1+(alturaEsq>alturaDir ? alturaEsq : alturaDir);
+        }
+        return val;
+    }
     m=chave<chaveAtual ? &(*n)->esq : &(*n)->dir;
     val=removeNoAvl(m, chave, extraiChave);
     alturaEsq=pegaAlturaNo((*n)->esq);
@@ -120,12 +162,14 @@ int pegaAlturaNo(noAvl* n) {
     return n ? n->altura : -1;
 }
 
-int calculaAlturaNo(noAvl* n) {
-    if(!n)
+int calculaAlturaNo(noAvl** n) {
+    if(!n||!(*n))
         return -1;
-    int alturaEsq=calculaAlturaNo(n->esq), alturaDir=calculaAlturaNo(n->dir);
-    n->altura=1+(alturaEsq>alturaDir ? alturaEsq : alturaDir);
-    return n->altura;
+    int alturaEsq=calculaAlturaNo(&(*n)->esq), alturaDir=calculaAlturaNo(&(*n)->dir);
+    (*n)->altura=1+(alturaEsq>alturaDir ? alturaEsq : alturaDir);
+    if(abs(calculaFbNo(*n))>1)
+        balanceiaNos(n, (*n)->fb>0 ? &(*n)->dir : &(*n)->esq);
+    return (*n)->altura;
 }
 
 int pegaFbNo(noAvl* n) {

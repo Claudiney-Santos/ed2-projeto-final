@@ -13,6 +13,53 @@ void listaProcessosHeap(heap* h);
 void listaHash(hash* h, statusCodigo status);
 void encerraProcessoGenerico(void* val);
 
+double calculaTempo(clock_t* tempo);
+
+int adicionarProcessoAvl(token* t, avl* a, clock_t* tempo, char* msg) {
+    double delta;
+    processo *p=novoProcesso(t->params[0]->val.integer, t->params[1]->val.string, t->params[2]->val.integer, t->params[3]->val.status);
+
+    calculaTempo(tempo);
+    insereAvl(a, (void*)p);
+    delta=calculaTempo(tempo);
+    if(msg) {
+        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+        adicionaLog(a->registro, msg);
+    }
+
+    return 0;
+}
+int adicionarProcessoHeap(token* t, heap* h, clock_t* tempo, char* msg) {
+    double delta;
+    processo* p=novoProcesso(t->params[0]->val.integer, t->params[1]->val.string, t->params[2]->val.integer, t->params[3]->val.status);
+
+    calculaTempo(tempo);
+    insereHeap(h, (void*)p);
+    delta=calculaTempo(tempo);
+    if(msg) {
+        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+        adicionaLog(h->registro, msg);
+    }
+
+    return 0;
+}
+int adicionarProcessoHash(token* t, hash* h, clock_t* tempo, char* msg) {
+    double delta;
+    processo* p=novoProcesso(t->params[0]->val.integer, t->params[1]->val.string, t->params[2]->val.integer, t->params[3]->val.status);
+    processo* q=NULL;
+    calculaTempo(tempo);
+    q=defineHash(h, p->codigo, (void*)p);
+    delta=calculaTempo(tempo);
+    if(q)
+        encerraProcesso(&q);
+    if(msg) {
+        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+        adicionaLog(h->registro, msg);
+    }
+
+    return 0;
+}
+
 double calculaTempo(clock_t* tempo) {
     double delta=0.0;
     if(*tempo) {
@@ -34,7 +81,7 @@ int executarSimulacao(lista* tokens) {
     int err=0, i=0;
 
     char executando=0;
-    int* k=NULL;
+    int* k=(int*)malloc(sizeof(int));
 
     char* msg=(char*)malloc(256*sizeof(char));
 
@@ -47,16 +94,19 @@ int executarSimulacao(lista* tokens) {
     heap* he=novoHeap(capacidadeInicial, funcPrioridadeHeap);
 
     processo* p=NULL;
-    processo* q=NULL;
+    //processo* q=NULL;
 
     ha[0]=novoHash(capacidadeInicial, funcHash1, colisaoLinear);
     ha[1]=novoHash(capacidadeInicial, funcHash1, colisaoQuadratica);
     ha[2]=novoHash(capacidadeInicial, funcHash2, colisaoLinear);
     ha[3]=novoHash(capacidadeInicial, funcHash2, colisaoQuadratica);
 
-    for(i=0;i<4;i++) {
+    if(!k||!msg||!a||!he||!ha[0]||!ha[1]||!ha[2]||!ha[3])
+        err=1;
+
+    for(i=0;!err&&i<4;i++) {
         sprintf(msg, "HashFuncHash%sColisao%s", i<2 ? "1" : "2", i%2 ? "Quadratica" : "Linear");
-        defineNomeLog(ha[i]->registro, msg);
+        err=defineNomeLog(ha[i]->registro, msg);
     }
 
     for(n=tokens->raiz;n&&!err;n=n->prox) {
@@ -72,38 +122,10 @@ int executarSimulacao(lista* tokens) {
                 executando=0;
                 break;
             case inserirAvl:
-                p=novoProcesso(t->params[0]->val.integer, t->params[1]->val.string, t->params[2]->val.integer, t->params[3]->val.status);
-
-                calculaTempo(&tempo);
-                insereAvl(a, (void*)p);
-                delta=calculaTempo(&tempo);
-                if(msg) {
-                    sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
-                    adicionaLog(a->registro, msg);
-                }
-
-                p=novoProcesso(t->params[0]->val.integer, t->params[1]->val.string, t->params[2]->val.integer, t->params[3]->val.status);
-
-                calculaTempo(&tempo);
-                insereHeap(he, (void*)p);
-                delta=calculaTempo(&tempo);
-                if(msg) {
-                    sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
-                    adicionaLog(he->registro, msg);
-                }
-
-                for(i=0;i<4;i++) {
-                    p=novoProcesso(t->params[0]->val.integer, t->params[1]->val.string, t->params[2]->val.integer, t->params[3]->val.status);
-                    calculaTempo(&tempo);
-                    q=defineHash(ha[i], p->codigo, (void*)p);
-                    delta=calculaTempo(&tempo);
-                    if(q)
-                        encerraProcesso(&q);
-                    if(msg) {
-                        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
-                        adicionaLog(ha[i]->registro, msg);
-                    }
-                }
+                adicionarProcessoAvl(t, a, &tempo, msg);
+                adicionarProcessoHeap(t, he, &tempo, msg);
+                for(i=0;i<4;i++)
+                    adicionarProcessoHash(t, ha[i], &tempo, msg);
 
                 p=NULL;
                 break;
@@ -143,15 +165,9 @@ int executarSimulacao(lista* tokens) {
                 }
                 break;
             case alterarHeap:
-                k=(int*)malloc(sizeof(int));
-                if(!k) {
-                    err=2;
-                    break;
-                }
                 *k=t->params[0]->val.integer;
                 calculaTempo(&tempo);
                 p=(processo*)buscaHeap(he, buscandoNoHeap, (void*)k);
-                free(k);
                 //p=(processo*)pegaAvl(a, t->params[0]->val.integer);
                 i=p ? p->prioridade : 0;
                 if(p) {
@@ -306,7 +322,6 @@ int executarSimulacao(lista* tokens) {
                 }
                 break;
             case terminar:
-                k=(int*)malloc(sizeof(int));
                 if(!k) {
                     err=2;
                     break;
@@ -321,7 +336,6 @@ int executarSimulacao(lista* tokens) {
                     sprintf(msg, "O processo anterior foi removido do heap em %g segundos", delta);
                     adicionaLog(he->registro, msg);
                 }
-                free(k);
                 encerraProcesso(&p);
 
                 calculaTempo(&tempo);
@@ -346,15 +360,19 @@ int executarSimulacao(lista* tokens) {
                 break;
         }
     }
+    if(k)
+        free(k);
 
-    salvarLogEmArquivo(a->registro);
-    printf("Os arquivos \"%s.log\"", a->registro->nome);
-    for(i=0;i<4;i++) {
-        salvarLogEmArquivo(ha[i]->registro);
-        printf(", \"%s.log\"", ha[i]->registro->nome);
+    if(!err) {
+        salvarLogEmArquivo(a->registro);
+        printf("Os arquivos \"%s.log\"", a->registro->nome);
+        for(i=0;i<4;i++) {
+            salvarLogEmArquivo(ha[i]->registro);
+            printf(", \"%s.log\"", ha[i]->registro->nome);
+        }
+        salvarLogEmArquivo(he->registro);
+        printf(" e \"%s.log\" foram salvos!\n", he->registro->nome);
     }
-    salvarLogEmArquivo(he->registro);
-    printf(" e \"%s.log\" foram salvos!\n", he->registro->nome);
 
     if(msg)
         free(msg);

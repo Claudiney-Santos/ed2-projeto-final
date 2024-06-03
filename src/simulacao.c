@@ -111,7 +111,6 @@ int executarSimulacao(lista* tokens) {
 
     for(n=tokens->raiz;n&&!err;n=n->prox) {
         t=(token*)n->val;
-        printf("Comando %d\n", t->cmd);
         if(!executando&&t->cmd!=iniciar)
             continue;
         switch(t->cmd) {

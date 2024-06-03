@@ -61,20 +61,19 @@ void liberaHash(hash** h) {
 void liberaHashFunc(hash** h, void(*f)(void*)) {
     if(!h||!(*h))
         return;
-    int i;
-    //for(i=0;(*h)->tamanho&&i<(*h)->capacidade;i++)
-    //    if((*h)->pares[i]) {
-    //        (*f)(liberaParHash(&(*h)->pares[i]));
-    //        (*h)->tamanho--;
-    //    }
-    for(i=0;i<(*h)->tamanho;i++)
+    void* val=NULL;
+    while((*h)->tamanho) {
+        val=removeHash(*h, (*h)->chaves[0]);
         if(f)
-            (*f)(removeHash(*h, (*h)->chaves[i]));
+            (*f)(val);
+    }
 
     if((*h)->registro)
         liberaLog(&(*h)->registro);
-    free((*h)->pares);
-    free((*h)->chaves);
+    if((*h)->pares)
+        free((*h)->pares);
+    if((*h)->chaves)
+        free((*h)->chaves);
     free(*h);
     *h=NULL;
 }
@@ -227,9 +226,10 @@ void* removeHash(hash* h, int chave) {
 
     for(i=0;i<h->tamanho;i++)
         if(h->chaves[i]==chave) {
-            h->chaves[i]=h->chaves[--h->tamanho];
+            h->chaves[i]=h->chaves[h->tamanho-1];
             break;
         }
+    h->tamanho--;
     return liberaParHash(p);
 }
 

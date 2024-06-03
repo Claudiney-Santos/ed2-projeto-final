@@ -25,7 +25,8 @@ void liberaNosAvlFunc(noAvl** n, void(*f)(void*)) {
         return;
     liberaNosAvlFunc(&(*n)->esq, f);
     liberaNosAvlFunc(&(*n)->dir, f);
-    (*f)((*n)->val);
+    if(f)
+        (*f)((*n)->val);
     free(*n);
     *n=NULL;
 }
@@ -164,7 +165,7 @@ void liberaAvl(avl** a) {
 }
 
 void liberaAvlFunc(avl** a, void(*f)(void*)) {
-    if(!a||!(*a)||!f)
+    if(!a||!(*a))
         return;
 
     liberaNosAvlFunc(&(*a)->raiz, f);

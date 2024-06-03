@@ -104,18 +104,32 @@ int executarSimulacao(lista* tokens) {
 
                 p=NULL;
                 break;
-            case terminarAvl:
-                calculaTempo(&tempo);
-                p=(processo*)removeAvl(a, t->params[0]->val.integer);
-                delta=calculaTempo(&tempo);
-                if(msg) {
-                    sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
-                    adicionaLog(a->registro, msg);
-                }
+            //case terminarAvl:
+            //case removerHash:
+                //calculaTempo(&tempo);
+                //p=(processo*)removeAvl(a, t->params[0]->val.integer);
+                //delta=calculaTempo(&tempo);
+                //if(msg) {
+                //    sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+                //    adicionaLog(a->registro, msg);
+                //}
 
-                encerraProcesso(&p);
-                p=NULL;
-                break;
+                //for(i=0;i<4;i++) {
+                //    calculaTempo(&tempo);
+                //    p=(processo*)removeHash(ha[i], t->params[0]->val.integer);
+                //    delta=calculaTempo(&tempo);
+                //    if(msg) {
+                //        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+                //        adicionaLog(ha[i]->registro, msg);
+                //    }
+
+                //    encerraProcesso(&p);
+                //    p=NULL;
+                //}
+
+                //encerraProcesso(&p);
+                //p=NULL;
+                //break;
             case listarAvl:
                 calculaTempo(&tempo);
                 listaProcessosAvl(a);
@@ -136,12 +150,17 @@ int executarSimulacao(lista* tokens) {
                 p=(processo*)buscaHeap(he, buscandoNoHeap, (void*)k);
                 free(k);
                 //p=(processo*)pegaAvl(a, t->params[0]->val.integer);
-                i=p->prioridade;
-                mudaPrioridade(p, t->params[1]->val.integer);
-                heapifica(he, 0);
+                i=p ? p->prioridade : 0;
+                if(p) {
+                    mudaPrioridade(p, t->params[1]->val.integer);
+                    heapifica(he, 0);
+                }
                 delta=calculaTempo(&tempo);
                 if(msg) {
-                    sprintf(msg, "O processo com codigo %d teve sua prioridade (%d) alterada para %d, isso foi feito em %g segundos", p->codigo, i, p->prioridade, delta);
+                    if(p)
+                        sprintf(msg, "O processo com codigo %d teve sua prioridade (%d) alterada para %d, isso foi feito em %g segundos", p->codigo, i, p->prioridade, delta);
+                    else
+                        sprintf(msg, "Ocorreu algum erro ao tentar buscar o processo com codigo %d no heap", *k);
                     adicionaLog(he->registro, msg);
                 }
                 p=NULL;
@@ -151,10 +170,36 @@ int executarSimulacao(lista* tokens) {
                 p=(processo*)removePrioritario(he);
                 delta=calculaTempo(&tempo);
                 if(msg) {
-                    sprintf(msg, "O processo com codigo %d foi removido em %g segundos", p->codigo, delta);
+                    if(p)
+                        sprintf(msg, "O processo com codigo %d foi removido em %g segundos", p->codigo, delta);
+                    else
+                        sprintf(msg, "Ocorreu algum problema ao tentar remover o elemento prioritario");
                     adicionaLog(he->registro, msg);
                 }
                 encerraProcesso(&p);
+
+                if(p) {
+                    calculaTempo(&tempo);
+                    p=removeAvl(a,p->codigo);
+                    delta=calculaTempo(&tempo);
+                    if(msg) {
+                        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+                        adicionaLog(a->registro, msg);
+                    }
+                    encerraProcesso(&p);
+
+                    for(i=0;i<4;i++) {
+                        calculaTempo(&tempo);
+                        p=removeHash(ha[i],p->codigo);
+                        delta=calculaTempo(&tempo);
+                        if(msg) {
+                            sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
+                            adicionaLog(ha[i]->registro, msg);
+                        }
+                        encerraProcesso(&p);
+                    }
+                }
+
                 p=NULL;
                 break;
             case listarHeap:
@@ -170,12 +215,17 @@ int executarSimulacao(lista* tokens) {
                 for(i=0;i<4;i++) {
                     calculaTempo(&tempo);
                     p=(processo*)pegaHash(ha[i], t->params[0]->val.integer);
-                    temp=p->status==bloqueado ? "BLOQUEADO" : p->status==pronto ? "PRONTO" : "EXECUTANDO";
-                    mudaStatus(p, bloqueado);
+                    if(p) {
+                        temp=p->status==bloqueado ? "BLOQUEADO" : p->status==pronto ? "PRONTO" : "EXECUTANDO";
+                        mudaStatus(p, bloqueado);
+                    }
                     delta=calculaTempo(&tempo);
                     if(msg) {
                         //sprintf(msg, "O processo com codigo %d passou do estado %s para BLOQUEADO, isso foi feito em %g segundos", p->codigo, temp, delta);
-                        //sprintf(msg, "O processo com codigo %d passou para o estado BLOQUEADO, isso foi feito em %g segundos", p->codigo, delta);
+                        if(p)
+                            sprintf(msg, "O processo com codigo %d passou para o estado BLOQUEADO, isso foi feito em %g segundos", p->codigo, delta);
+                        else
+                            sprintf(msg, "Ocorreu um erro ao tentar mudar o estado do processo com codigo %d", t->params[0]->val.integer);
                         adicionaLog(ha[i]->registro, msg);
                     }
                     p=NULL;
@@ -185,11 +235,16 @@ int executarSimulacao(lista* tokens) {
                 for(i=0;i<4;i++) {
                     calculaTempo(&tempo);
                     p=(processo*)pegaHash(ha[i], t->params[0]->val.integer);
-                    temp=p->status==bloqueado ? "BLOQUEADO" : p->status==pronto ? "PRONTO" : "EXECUTANDO";
-                    mudaStatus(p, pronto);
+                    if(p) {
+                        temp=p->status==bloqueado ? "BLOQUEADO" : p->status==pronto ? "PRONTO" : "EXECUTANDO";
+                        mudaStatus(p, pronto);
+                    }
                     delta=calculaTempo(&tempo);
                     if(msg) {
-                        sprintf(msg, "O processo com codigo %d passou do estado %s para PRONTO, isso foi feito em %g segundos", p->codigo, temp, delta);
+                        if(p)
+                            sprintf(msg, "O processo com codigo %d passou do estado %s para PRONTO, isso foi feito em %g segundos", p->codigo, temp, delta);
+                        else
+                            sprintf(msg, "Ocorreu um erro ao tentar mudar o estado do processo com codigo %d", t->params[0]->val.integer);
                         adicionaLog(ha[i]->registro, msg);
                     }
                     p=NULL;
@@ -199,27 +254,18 @@ int executarSimulacao(lista* tokens) {
                 for(i=0;i<4;i++) {
                     calculaTempo(&tempo);
                     p=(processo*)pegaHash(ha[i], t->params[0]->val.integer);
-                    temp=p->status==bloqueado ? "BLOQUEADO" : p->status==pronto ? "PRONTO" : "EXECUTANDO";
-                    mudaStatus(p, executando);
+                    if(p) {
+                        temp=p->status==bloqueado ? "BLOQUEADO" : p->status==pronto ? "PRONTO" : "EXECUTANDO";
+                        mudaStatus(p, executando);
+                    }
                     delta=calculaTempo(&tempo);
                     if(msg) {
-                        sprintf(msg, "O processo com codigo %d passou do estado %s para EXECUTANDO, isso foi feito em %g segundos", p->codigo, temp, delta);
+                        if(p)
+                            sprintf(msg, "O processo com codigo %d passou do estado %s para EXECUTANDO, isso foi feito em %g segundos", p->codigo, temp, delta);
+                        else
+                            sprintf(msg, "Ocorreu um erro ao tentar mudar o estado do processo com codigo %d", t->params[0]->val.integer);
                         adicionaLog(ha[i]->registro, msg);
                     }
-                    p=NULL;
-                }
-                break;
-            case removerHash:
-                for(i=0;i<4;i++) {
-                    calculaTempo(&tempo);
-                    p=(processo*)removeHash(ha[i], t->params[0]->val.integer);
-                    delta=calculaTempo(&tempo);
-                    if(msg) {
-                        sprintf(msg, "A ultima operacao foi executada em %g segundos", delta);
-                        adicionaLog(ha[i]->registro, msg);
-                    }
-
-                    encerraProcesso(&p);
                     p=NULL;
                 }
                 break;
@@ -234,6 +280,8 @@ int executarSimulacao(lista* tokens) {
                     }
                 }
                 break;
+            case terminarAvl:
+            case removerHash:
             case terminar:
                 k=(int*)malloc(sizeof(int));
                 if(!k) {
@@ -242,24 +290,17 @@ int executarSimulacao(lista* tokens) {
                 }
                 *k=t->params[0]->val.integer;
 
-                printf("cheogu faeh\n");
                 calculaTempo(&tempo);
-                printf("cheogu faeh111111\n");
                 p=removeHeap(he, buscandoNoHeap, k);
-                printf("cheogu faeh222222\n");
                 delta=calculaTempo(&tempo);
-                printf("cheogu faeh333333\n");
                 if(msg) {
                     //sprintf(msg, "O processo com codigo %d e prioridade %d foi removido do heap em %g segundos", p->codigo, p->prioridade, delta);
                     sprintf(msg, "O processo anterior foi removido do heap em %g segundos", delta);
                     adicionaLog(he->registro, msg);
                 }
-                printf("cheogu23u892342839478239 faeh333333\n");
                 free(k);
-                printf("cheog228392384u wefewfwoifaeh333333\n");
                 encerraProcesso(&p);
 
-                printf("cheogu wefewfwoifaeh333333\n");
                 calculaTempo(&tempo);
                 removeAvl(a,t->params[0]->val.integer);
                 delta=calculaTempo(&tempo);

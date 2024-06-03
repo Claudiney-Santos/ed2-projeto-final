@@ -67,7 +67,8 @@ void liberaHashFunc(hash** h, void(*f)(void*)) {
     //        (*h)->tamanho--;
     //    }
     for(i=0;i<(*h)->tamanho;i++)
-        (*f)(removeHash(*h, (*h)->chaves[i]));
+        if(f)
+            (*f)(removeHash(*h, (*h)->chaves[i]));
 
     if((*h)->registro)
         liberaLog(&(*h)->registro);

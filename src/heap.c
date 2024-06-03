@@ -38,7 +38,8 @@ int liberaHeapFunc(heap** h, void(*f)(void*)) {
         return -1;
     int i;
     for(i=0;i<(*h)->tamanho;i++)
-        (*f)((*h)->vet[i]);
+        if(f)
+            (*f)((*h)->vet[i]);
     if((*h)->registro)
         liberaLog(&(*h)->registro);
     free((*h)->vet);

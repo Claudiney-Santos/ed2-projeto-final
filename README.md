@@ -1,4 +1,4 @@
-# ATIVIDADE PRÁTICA 2
+# ATIVIDADE PRÁTICA 2 DE ESTRUTURA DE DADOS 2
 
 # Observação:
 Esse projeto foi programado com o Linux em mente. Ele foi criado e testado no Ubuntu via WSL.

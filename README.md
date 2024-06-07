@@ -1,7 +1,7 @@
-# ATIVIDADE DE PRÁTICA 2
+# ATIVIDADE PRÁTICA 2
 
 # Observação:
-Esse projeto foi programado com o Linux em mente. Ele foi criado e testado no Ubuntu (WSL).
+Esse projeto foi programado com o Linux em mente. Ele foi criado e testado no Ubuntu via WSL.
 
 ## Pré-requisitos para a compilação
 - `gcc`
